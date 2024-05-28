@@ -94,6 +94,17 @@ class Product(BaseModel):
 
     category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"))
     category: Mapped["Category"] = relationship("Category", back_populates="products")
+    image: Mapped["Image"] = relationship("Image", back_populates="product")
+
+
+class Image(BaseModel):
+    __tablename__ = "images"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    url: Mapped[str] = mapped_column(String(100), nullable=False)
+    product_id: Mapped[int] = mapped_column(ForeignKey("products.id"))
+
+    product: Mapped["Product"] = relationship("Product", back_populates="images")
 
 
 class Cart(BaseModel):
