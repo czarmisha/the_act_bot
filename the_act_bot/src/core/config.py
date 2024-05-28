@@ -28,3 +28,6 @@ class Settings(BaseSettings):
             #     "sslmode": "require" if self.POSTGRES else "disable"
             # },
         )
+
+
+settings = Settings()
