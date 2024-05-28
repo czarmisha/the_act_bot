@@ -1,6 +1,8 @@
 from datetime import datetime
 
 from sqlalchemy import DateTime, ForeignKey, String, UniqueConstraint, func
+from sqlalchemy.ext.mutable import MutableDict
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, validates, relationship
 
 from the_act_bot.src.database.enums import LanguageEnums, UserTypeEnums
@@ -45,7 +47,7 @@ class User(BaseModel):
     name: Mapped[str | None]
 
     cart: Mapped["Cart"] = relationship("Cart", back_populates="user")
-    payments: Mapped["Payment"] = relationship("Payment", back_populates="user")
+    payments: Mapped[list["Payment"]] = relationship("Payment", back_populates="user")
 
     @validates("phone")
     def validate_phone(self, key, value):
@@ -59,17 +61,27 @@ class User(BaseModel):
             if value[:4] != "+998":
                 raise ValueError("Phone number must start with +998")
         return value
+    
+
+class Brand(BaseModel):
+    __tablename__ = "brands"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+
+    categories: Mapped[list["Category"]] = relationship("Category", back_populates="brand")
 
 
 class Category(BaseModel):
     __tablename__ = "categories"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    name: Mapped[dict[str, str]] = mapped_column(MutableDict.as_mutable(JSONB()), nullable=False)
+    brand_id: Mapped[int] = mapped_column(ForeignKey("brands.id"))
 
-    products: Mapped["Product"] = relationship("Product", back_populates="category")
+    products: Mapped[list["Product"]] = relationship("Product", back_populates="category")
 
-    __table_args__ = (UniqueConstraint("name"),)
+    __table_args__ = (UniqueConstraint("name", "brand_id"),)
 
 
 class Product(BaseModel):
@@ -77,6 +89,7 @@ class Product(BaseModel):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
+    description: Mapped[dict[str, str]] = mapped_column(MutableDict.as_mutable(JSONB()), nullable=False)
     price: Mapped[int] = mapped_column(nullable=False)
 
     category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"))
@@ -90,7 +103,7 @@ class Cart(BaseModel):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
 
     user: Mapped["User"] = relationship("User", back_populates="cart", single_parent=True)
-    items: Mapped["CartItem"] = relationship("CartItem", back_populates="cart")
+    items: Mapped[list["CartItem"]] = relationship("CartItem", back_populates="cart")
 
     __table_args__ = (UniqueConstraint("user_id"),)
 
@@ -122,7 +135,7 @@ class Order(BaseModel):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
 
     user: Mapped["User"] = relationship("User", back_populates="orders")
-    items: Mapped["OrderItem"] = relationship("OrderItem", back_populates="order")
+    items: Mapped[list["OrderItem"]] = relationship("OrderItem", back_populates="order")
 
 
 class OrderItem(BaseModel):
