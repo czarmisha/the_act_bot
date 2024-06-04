@@ -10,4 +10,4 @@ class Brand(models.BaseModel):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
 
-    categories: Mapped[list[models.Category]] = relationship("Category", back_populates="brand")
+    categories: Mapped[list["models.Category"]] = relationship("Category", back_populates="brand")

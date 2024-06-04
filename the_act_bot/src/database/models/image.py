@@ -11,4 +11,4 @@ class Image(models.BaseModel):
     url: Mapped[str] = mapped_column(String(100), nullable=False)
     product_id: Mapped[int] = mapped_column(ForeignKey("products.id"))
 
-    product: Mapped[models.Product] = relationship("Product", back_populates="images")
+    product: Mapped["models.Product"] = relationship("Product", back_populates="images")

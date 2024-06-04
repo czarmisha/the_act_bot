@@ -12,6 +12,8 @@ class Category(models.BaseModel):
     name: Mapped[dict[str, str]] = mapped_column(MutableDict.as_mutable(JSONB()), nullable=False)
     brand_id: Mapped[int] = mapped_column(ForeignKey("brands.id"))
 
-    products: Mapped[list[models.Product]] = relationship("Product", back_populates="category")
+    product_categories: Mapped[list["models.ProductCategory"]] = relationship(
+        "ProductCategory", back_populates="category"
+    )
 
     __table_args__ = (UniqueConstraint("name", "brand_id"),)

@@ -10,7 +10,7 @@ class Order(models.BaseModel):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
 
-    user: Mapped[models.User] = relationship("User", back_populates="orders")
+    user: Mapped["models.User"] = relationship("User", back_populates="orders", foreign_keys=[user_id])
     items: Mapped[list["OrderItem"]] = relationship("OrderItem", back_populates="order")
 
 
@@ -22,4 +22,4 @@ class OrderItem(models.BaseModel):
     product_id: Mapped[int] = mapped_column(ForeignKey("products.id"))
 
     order: Mapped["Order"] = relationship("Order", back_populates="items")
-    product: Mapped[models.Product] = relationship("Product")
+    product: Mapped["models.Product"] = relationship("Product")

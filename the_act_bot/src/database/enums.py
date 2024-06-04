@@ -11,3 +11,9 @@ class LanguageEnums(str, enum.Enum):
     EN = "en"
     RU = "ru"
     UZ = "uz"
+
+
+class DiscountTypeEnums(str, enum.Enum):
+    FIXED = "fixed"
+    PERCENT = "percent"
+    PROMO = "promo"

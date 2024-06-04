@@ -6,3 +6,4 @@ from .image import *
 from .payment import *
 from .product import *
 from .user import *
+from .discount import *

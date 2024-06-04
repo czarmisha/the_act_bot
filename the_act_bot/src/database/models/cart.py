@@ -11,7 +11,7 @@ class Cart(models.BaseModel):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
 
-    user: Mapped[models.User] = relationship("User", back_populates="cart", single_parent=True)
+    user: Mapped["models.User"] = relationship("User", back_populates="cart", single_parent=True, foreign_keys=[user_id])
     items: Mapped[list["CartItem"]] = relationship("CartItem", back_populates="cart")
 
     __table_args__ = (UniqueConstraint("user_id"),)
@@ -25,4 +25,4 @@ class CartItem(models.BaseModel):
     product_id: Mapped[int] = mapped_column(ForeignKey("products.id"))
 
     cart: Mapped["Cart"] = relationship("Cart", back_populates="items")
-    product: Mapped[models.Product] = relationship("Product")
+    product: Mapped["models.Product"] = relationship("Product")

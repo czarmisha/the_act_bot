@@ -1,7 +1,7 @@
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, validates, relationship
 
-from the_act_bot.src.database.enums import LanguageEnums, UserTypeEnums
+import the_act_bot.src.database.enums as enums
 import the_act_bot.src.database.models as models
 
 
@@ -10,13 +10,13 @@ class User(models.BaseModel):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
-    type: Mapped[UserTypeEnums] = mapped_column(UserTypeEnums, nullable=False)
-    lang: Mapped[LanguageEnums] = mapped_column(LanguageEnums, nullable=False)
+    type: Mapped[enums.UserTypeEnums] = mapped_column(nullable=False)
+    lang: Mapped[enums.LanguageEnums] = mapped_column(nullable=False)
     phone: Mapped[str] = mapped_column(index=True, nullable=False)
     name: Mapped[str | None]
 
-    cart: Mapped[models.Cart] = relationship("Cart", back_populates="user")
-    payments: Mapped[list[models.Payment]] = relationship("Payment", back_populates="user")
+    cart: Mapped["models.Cart"] = relationship("Cart", back_populates="user")
+    payments: Mapped[list["models.Payment"]] = relationship("Payment", back_populates="user")
 
     @validates("phone")
     def validate_phone(self, key, value):
