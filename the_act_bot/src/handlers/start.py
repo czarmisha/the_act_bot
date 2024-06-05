@@ -10,9 +10,10 @@ from telegram.ext import (
 )
 
 import the_act_bot.src.repos as repos
-from the_act_bot.src.database.session import session_maker
-import the_act_bot.src.database.enums as enums
 import the_act_bot.src.schemas as schemas
+import the_act_bot.src.utils.keyboards as keyboards
+from the_act_bot.src.database.session import session_maker
+from the_act_bot.src.utils.translation import text
 
 
 logging.basicConfig(
@@ -32,14 +33,21 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             logger.info(f'new user {effective_user.id}')
             user = await user_repo.create(
                 schemas.UserIn(
-                    name=effective_user.first_name or effective_user.username,
                     telegram_id=effective_user.id,
-                    lang=effective_user.language_code,
                 )
             )
-
-    logger.info(f'user: {user}')
-        
+            await update.message.reply_text(text['start']['ru'])
+            return LANGUAGE
+        else:
+            if not user.lang:
+                await update.message.reply_text(text['start']['ru'])
+                return LANGUAGE
+            if not user.name:
+                await update.message.reply_text(text['fio'][user.lang])
+                return FIO
+            else:
+                await update.message.reply_text(text['start_final'][user.lang])
+                return ConversationHandler.END
     
 #     if not candidate:
 #         candidate = Candidate(

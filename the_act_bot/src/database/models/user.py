@@ -10,10 +10,10 @@ class User(models.BaseModel):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     telegram_id: Mapped[int] = mapped_column(nullable=False)
-    name: Mapped[str] = mapped_column(String(100))
+    name: Mapped[str | None] = mapped_column(String(100), nullable=True)
     type: Mapped[enums.UserTypeEnums] = mapped_column(nullable=False)
-    lang: Mapped[enums.LanguageEnums] = mapped_column(default=enums.LanguageEnums.RU)
-    phone: Mapped[str] = mapped_column(index=True)
+    lang: Mapped[enums.LanguageEnums | None]
+    phone: Mapped[str] = mapped_column(index=True, nullable=True)
 
     cart: Mapped["models.Cart"] = relationship("Cart", back_populates="user")
     payments: Mapped[list["models.Payment"]] = relationship("Payment", back_populates="user")
