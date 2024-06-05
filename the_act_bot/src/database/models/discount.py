@@ -12,8 +12,7 @@ class Discount(models.BaseModel):
     type: Mapped[enums.DiscountTypeEnums] = mapped_column(nullable=False)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     value: Mapped[int] = mapped_column(nullable=False)
-    product_id: Mapped[int] = mapped_column(ForeignKey("products.id"))
-    product: Mapped["models.Product"] = relationship("Product", back_populates="discounts")
+    products: Mapped[list["models.Product"]] = relationship("Product", back_populates="discount")
 
     @validates("value")
     def validate_value(self, key, value):

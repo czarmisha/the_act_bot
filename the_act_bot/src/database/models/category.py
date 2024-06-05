@@ -15,5 +15,6 @@ class Category(models.BaseModel):
     product_categories: Mapped[list["models.ProductCategory"]] = relationship(
         "ProductCategory", back_populates="category"
     )
+    brand: Mapped["models.Brand"] = relationship("Brand", back_populates="categories")
 
     __table_args__ = (UniqueConstraint("name", "brand_id"),)

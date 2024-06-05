@@ -7,9 +7,10 @@ class User(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     name: str | None
-    type: UserTypeEnums
-    lang: LanguageEnums
-    phone: str
+    telegram_id: int
+    type: UserTypeEnums = UserTypeEnums.USER
+    lang: LanguageEnums = LanguageEnums.RU
+    phone: str = ''
 
 
 class UserIn(User):

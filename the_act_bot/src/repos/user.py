@@ -17,6 +17,7 @@ class UserRepo(SQLAlchemyRepo):
             .returning(User)
             .values(
                 name=user_in.name,
+                telegram_id=user_in.telegram_id,
                 phone=user_in.phone,
                 type=user_in.type,
                 lang=user_in.lang,
@@ -38,8 +39,18 @@ class UserRepo(SQLAlchemyRepo):
 
         return result
 
-    async def get_by_id(self, user_id: UUID) -> User:
+    async def get_by_id(self, user_id: int) -> User:
         stmt = select(User).where(User.id == user_id)
+
+        result = await self._session.scalar(stmt)
+
+        if result is None:
+            return
+
+        return result
+    
+    async def get_by_telegram_id(self, telegram_id: int) -> User:
+        stmt = select(User).where(User.telegram_id == telegram_id)
 
         result = await self._session.scalar(stmt)
 

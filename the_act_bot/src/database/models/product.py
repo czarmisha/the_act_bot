@@ -13,9 +13,10 @@ class Product(models.BaseModel):
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     description: Mapped[dict[str, str]] = mapped_column(MutableDict.as_mutable(JSONB()), nullable=False)
     price: Mapped[int] = mapped_column(nullable=False)
+    discount_id: Mapped[int] = mapped_column(ForeignKey("discounts.id"), nullable=True)
 
-    image: Mapped["models.Image"] = relationship("Image", back_populates="product")
-    discount: Mapped["models.Discount"] = relationship("Discount", back_populates="product")
+    images: Mapped[list["models.Image"]] = relationship("Image", back_populates="product")
+    discount: Mapped["models.Discount"] = relationship("Discount", back_populates="products")
     product_categories: Mapped[list["models.ProductCategory"]] = relationship(
         "ProductCategory", back_populates="product"
     )
@@ -28,7 +29,7 @@ class ProductCategory(models.BaseModel):
     product_id: Mapped[int] = mapped_column(ForeignKey("products.id"))
     category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"))
 
-    product: Mapped["models.Product"] = relationship("Product", back_populates="product_categories")
-    category: Mapped["models.Category"] = relationship("Category", back_populates="products")
+    product: Mapped["models.Product"] = relationship("Product")
+    category: Mapped["models.Category"] = relationship("Category")
 
     __table_args__ = (UniqueConstraint("product_id", "category_id"),)

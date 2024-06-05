@@ -9,11 +9,11 @@ class User(models.BaseModel):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    telegram_id: Mapped[int] = mapped_column(nullable=False)
+    name: Mapped[str] = mapped_column(String(100))
     type: Mapped[enums.UserTypeEnums] = mapped_column(nullable=False)
-    lang: Mapped[enums.LanguageEnums] = mapped_column(nullable=False)
-    phone: Mapped[str] = mapped_column(index=True, nullable=False)
-    name: Mapped[str | None]
+    lang: Mapped[enums.LanguageEnums] = mapped_column(default=enums.LanguageEnums.RU)
+    phone: Mapped[str] = mapped_column(index=True)
 
     cart: Mapped["models.Cart"] = relationship("Cart", back_populates="user")
     payments: Mapped[list["models.Payment"]] = relationship("Payment", back_populates="user")
