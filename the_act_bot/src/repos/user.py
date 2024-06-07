@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from sqlalchemy import insert, select
+from sqlalchemy import insert, select, update
 
 from the_act_bot.src.database.models import User
 from the_act_bot.src.schemas import user as schemas
@@ -58,3 +58,15 @@ class UserRepo(SQLAlchemyRepo):
             return
 
         return result
+    
+    async def update(self, telegram_id: int ,user_in: schemas.UserUpdate):
+        stmt = (
+            update(User)
+            .where(User.telegram_id == telegram_id)
+            .values(**user_in.model_dump())
+        )
+
+        await self._session.execute(stmt)
+        await self._session.commit()
+
+        return True

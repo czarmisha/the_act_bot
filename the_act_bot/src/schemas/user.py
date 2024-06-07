@@ -19,3 +19,10 @@ class UserIn(User):
 
 class UserOut(User):
     id: int
+
+
+class UserUpdate():
+    name: str | None = None
+    type: UserTypeEnums = UserTypeEnums.USER
+    lang: LanguageEnums | None = None
+    phone: str | None = None
