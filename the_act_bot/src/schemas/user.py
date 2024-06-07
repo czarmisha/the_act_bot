@@ -21,8 +21,8 @@ class UserOut(User):
     id: int
 
 
-class UserUpdate():
+class UserUpdate(BaseModel):
     name: str | None = None
-    type: UserTypeEnums = UserTypeEnums.USER
+    type: UserTypeEnums | None = None
     lang: LanguageEnums | None = None
     phone: str | None = None

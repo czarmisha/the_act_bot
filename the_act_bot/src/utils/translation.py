@@ -19,4 +19,14 @@ text = {
         'uz': 'Sizning FIO',
         'en': 'Your FIO',
     },
+    'phone': {
+        'ru': 'Отправить контакт',
+        'uz': 'Kontakt yuborish',
+        'en': 'Send contact',
+    },
+    'phone_format': {
+        'ru': 'Неверный формат номера',
+        'uz': 'Noto`g`ri telefon raqami',
+        'en': 'Wrong phone number format',
+    }
 }

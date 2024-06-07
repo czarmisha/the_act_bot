@@ -1,5 +1,5 @@
-import logging, datetime, re
-from telegram import Update, InlineKeyboardMarkup
+import logging, re
+from telegram import Update
 from telegram.ext import (
     ContextTypes,
     MessageHandler,
@@ -36,17 +36,21 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     telegram_id=effective_user.id,
                 )
             )
-            await update.message.reply_text(text['start']['ru'])
-            keyboard = keyboards.language #TODO:
+            keyboard = keyboards.get_lang_keyboard_markup()
+            await update.message.reply_text(text['start']['ru'], reply_markup=keyboard)
             return LANGUAGE
         else:
             if not user.lang:
-                await update.message.reply_text(text['start']['ru'])
-                keyboard = keyboards.language#TODO:
+                keyboard = keyboards.get_lang_keyboard_markup()
+                await update.message.reply_text(text['start']['ru'], reply_markup=keyboard)
                 return LANGUAGE
             if not user.name:
                 await update.message.reply_text(text['fio'][user.lang])
                 return FIO
+            if not user.phone:
+                keyboard = keyboards.get_phone_keyboard_markup(user.lang)
+                await update.message.reply_text(text['phone'][user.lang], reply_markup=keyboard)
+                return PHONE
             else:
                 await update.message.reply_text(text['start_final'][user.lang])
                 return ConversationHandler.END
@@ -54,17 +58,18 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def language(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
-    query.answer()
+    await query.answer()
+    print('!'*55, query.data)
     answer = query.data.split('_')[1]
-    context.chat_data['lang'] = answer
+    # context.chat_data['lang'] = answer #TODO: uncommit later
 
     effective_user = update.effective_user
     async with session_maker() as session:
         user_repo = repos.UserRepo(session)
         await user_repo.update(
             telegram_id=effective_user.id,
-            user_id=schemas.UserUpdate(
-                language=answer,
+            user_in=schemas.UserUpdate(
+                lang=answer,
             )
         )
 
@@ -74,22 +79,34 @@ async def language(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def fio(update: Update, context: ContextTypes.DEFAULT_TYPE):
     effective_user = update.effective_user
+    lang = context.chat_data.get('lang')
     async with session_maker() as session:
         user_repo = repos.UserRepo(session)
         await user_repo.update(
             telegram_id=effective_user.id,
-            user_id=schemas.UserUpdate(
+            user_in=schemas.UserUpdate(
                 name=update.message.text,
             )
         )
-        keyboard = keyboards.PHONE #TODO: кнопка отправить контакт
-        await update.message.reply_text(text=text['fio'][answer])
-        return PHONE
+
+        if not lang:
+            user = await user_repo.get_by_telegram_id(effective_user.id)
+            lang = user.lang
+
+    keyboard = keyboards.get_phone_keyboard_markup(lang)
+    await update.message.reply_text(text=text['phone'][lang], reply_markup=keyboard)
+    return PHONE
 
 
 async def phone(update: Update, context: ContextTypes.DEFAULT_TYPE):
     effective_user = update.effective_user
-    phone = update.message.text or update.message.contact.phone_number
+    phone = update.message.contact.phone_number
+    lang = context.chat_data.get('lang')
+    if not lang:
+        async with session_maker() as session:
+            user_repo = repos.UserRepo(session)
+            user = await user_repo.get_by_telegram_id(effective_user.id)
+            lang = user.lang
 
     pattern = r"^(\+998)[ .,-]?[0-9]{2}[ .,-]?[0-9]{3}[ .,-]?[0-9]{2}[ .,-]?[0-9]{2}$"
     if not re.match(pattern, phone):
@@ -100,12 +117,12 @@ async def phone(update: Update, context: ContextTypes.DEFAULT_TYPE):
         user_repo = repos.UserRepo(session)
         await user_repo.update(
             telegram_id=effective_user.id,
-            user_id=schemas.UserUpdate(
+            user_in=schemas.UserUpdate(
                 phone=phone,
             )
         )
-        keyboard = keyboards.SHOP #TODO:
-        await update.message.reply_text(text=text['fio'][answer])
+        # keyboard = keyboards.SHOP #TODO:
+        await update.message.reply_text(text=text['fio'][lang])
     
     return ConversationHandler.END
 
@@ -126,7 +143,7 @@ start_handler = ConversationHandler(
                 CallbackQueryHandler(language, pattern='^lang_'),
             ],
             FIO: [MessageHandler(filters.TEXT & ~filters.COMMAND, fio)],
-            PHONE: [MessageHandler(filters.TEXT & filters.CONTACT & ~filters.COMMAND, phone)],
+            PHONE: [MessageHandler(filters.CONTACT & ~filters.COMMAND, phone)],
         },
         fallbacks=[CommandHandler("cancel", cancel)]
     )

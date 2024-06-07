@@ -63,7 +63,7 @@ class UserRepo(SQLAlchemyRepo):
         stmt = (
             update(User)
             .where(User.telegram_id == telegram_id)
-            .values(**user_in.model_dump())
+            .values(**user_in.model_dump(exclude_none=True))
         )
 
         await self._session.execute(stmt)
