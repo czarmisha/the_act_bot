@@ -52,6 +52,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 await update.message.reply_text(text['phone'][user.lang], reply_markup=keyboard)
                 return PHONE
             else:
+                # keyboard = #TODO: main menu
                 await update.message.reply_text(text['start_final'][user.lang])
                 return ConversationHandler.END
 
