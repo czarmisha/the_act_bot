@@ -66,3 +66,13 @@ def get_instance_keyboard(prefix: str, instances: list) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         [[InlineKeyboardButton(text=i.name, callback_data=f"{prefix}_instance_{i.id}")] for i in instances]
     )
+
+def get_remove_confirmation_keyboard(prefix: str, id: int) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(text="Да", callback_data=f"{prefix}_remove_confirmation_{id}_yes"),
+                InlineKeyboardButton(text="Нет", callback_data=f"{prefix}_remove_confirmation_{id}_no")
+            ]
+        ]
+    )

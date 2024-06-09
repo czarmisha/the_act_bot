@@ -1,4 +1,4 @@
-from sqlalchemy import insert, select, update
+from sqlalchemy import insert, select, update, delete
 
 from the_act_bot.src.database import enums
 from the_act_bot.src.database.models import Brand
@@ -52,3 +52,12 @@ class BrandRepo(SQLAlchemyRepo):
         await self._session.commit()
 
         return True
+    
+    async def remove(self, id: int):
+        stmt = (
+            delete(Brand)
+            .where(Brand.id == id)
+        )
+
+        await self._session.execute(stmt)
+        await self._session.commit()
