@@ -9,5 +9,7 @@ class Brand(models.BaseModel):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
+    position: Mapped[int] = mapped_column(nullable=False, default=1)
+    active: Mapped[bool] = mapped_column(nullable=False, default=True)
 
     categories: Mapped[list["models.Category"]] = relationship("Category", back_populates="brand")

@@ -2,6 +2,7 @@ from uuid import UUID
 
 from sqlalchemy import insert, select, update
 
+from the_act_bot.src.database import enums
 from the_act_bot.src.database.models import User
 from the_act_bot.src.schemas import user as schemas
 
@@ -28,6 +29,16 @@ class UserRepo(SQLAlchemyRepo):
 
         await self._session.commit()
         return schemas.UserOut.model_validate(user)
+    
+    async def is_admin(self, telegram_id: int) -> bool:
+        stmt = select(User).where(User.telegram_id == telegram_id, User.type == enums.UserTypeEnums.ADMIN)
+
+        result = await self._session.scalar(stmt)
+
+        if result is None:
+            return False
+
+        return True
 
     async def get_by_phone(self, phone: str) -> User:
         stmt = select(User).where(User.phone == phone)

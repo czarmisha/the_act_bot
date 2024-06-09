@@ -9,6 +9,7 @@ from telegram.ext import (
     filters,
 )
 
+from the_act_bot.src.database import enums
 import the_act_bot.src.repos as repos
 import the_act_bot.src.schemas as schemas
 import the_act_bot.src.utils.keyboards as keyboards
@@ -26,6 +27,7 @@ LANGUAGE, FIO, PHONE = range(3)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     effective_user = update.effective_user
+    is_admin = False
     async with session_maker() as session:
         user_repo = repos.UserRepo(session)
         user = await user_repo.get_by_telegram_id(effective_user.id)
@@ -52,8 +54,13 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 await update.message.reply_text(text['phone'][user.lang], reply_markup=keyboard)
                 return PHONE
             else:
-                # keyboard = #TODO: main menu
-                await update.message.reply_text(text['start_final'][user.lang])
+                is_admin = await user_repo.is_admin(effective_user.id)
+                if is_admin:
+                    keyboard = keyboards.get_admin_main_menu_keyboard()
+                else:
+                    keyboard = keyboards.get_main_menu_keyboard()
+
+                await update.message.reply_text(text['start_final'][user.lang], reply_markup=keyboard)
                 return ConversationHandler.END
 
 
@@ -62,7 +69,7 @@ async def language(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.answer()
     print('!'*55, query.data)
     answer = query.data.split('_')[1]
-    # context.chat_data['lang'] = answer #TODO: uncommit later
+    context.chat_data['lang'] = answer
 
     effective_user = update.effective_user
     async with session_maker() as session:
@@ -103,6 +110,7 @@ async def phone(update: Update, context: ContextTypes.DEFAULT_TYPE):
     effective_user = update.effective_user
     phone = update.message.contact.phone_number
     lang = context.chat_data.get('lang')
+    is_admin = False
     if not lang:
         async with session_maker() as session:
             user_repo = repos.UserRepo(session)
@@ -122,9 +130,13 @@ async def phone(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 phone=phone,
             )
         )
-        # keyboard = keyboards.SHOP #TODO:
-        await update.message.reply_text(text=text['fio'][lang])
-    
+        is_admin = await user_repo.is_admin(effective_user.id)
+
+    if is_admin:
+        keyboard = keyboards.get_admin_main_menu_keyboard()
+    else:
+        keyboard = keyboards.get_main_menu_keyboard()
+    await update.message.reply_text(text['start_final'][lang], reply_markup=keyboard)
     return ConversationHandler.END
 
 
