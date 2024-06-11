@@ -104,4 +104,9 @@ text = {
         'uz': 'Bekor qilish',
         'en': 'Cancel',
     },
+    'analytics': {
+        'ru': 'Аналитика',
+        'uz': 'Analitika',
+        'en': 'Analytics',
+    }
 }

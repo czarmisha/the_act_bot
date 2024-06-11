@@ -51,6 +51,7 @@ def get_admin_main_menu_keyboard() -> ReplyKeyboardMarkup:
             [KeyboardButton(text=text['list_admin_user']['ru'])],
             [KeyboardButton(text=text['add_admin_user']['ru'])],
             [KeyboardButton(text=text['cancel']['ru'])],
+            [KeyboardButton(text=text['analytics']['ru'])],
         ],
         resize_keyboard=True,
     )
