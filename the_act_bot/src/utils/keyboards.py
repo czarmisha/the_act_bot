@@ -50,15 +50,16 @@ def get_admin_main_menu_keyboard() -> ReplyKeyboardMarkup:
             [KeyboardButton(text=text['add_product']['ru'])],
             [KeyboardButton(text=text['list_admin_user']['ru'])],
             [KeyboardButton(text=text['add_admin_user']['ru'])],
+            [KeyboardButton(text=text['cancel']['ru'])],
         ],
         resize_keyboard=True,
     )
 
-def get_action_keyboard(prefix: str) -> InlineKeyboardMarkup:
+def get_action_keyboard(prefix: str, brand_id: int) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup([
         [
-            InlineKeyboardButton(text='Редактировать', callback_data=f"{prefix}_edit"),
-            InlineKeyboardButton(text='Удалить', callback_data=f"{prefix}_delete")
+            InlineKeyboardButton(text='Редактировать', callback_data=f"{prefix}_edit_{brand_id}"),
+            InlineKeyboardButton(text='Удалить', callback_data=f"{prefix}_remove_{brand_id}")
         ]
     ])
 

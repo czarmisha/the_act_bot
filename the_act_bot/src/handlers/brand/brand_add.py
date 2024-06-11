@@ -37,7 +37,6 @@ async def brand_add(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def name(update: Update, context: ContextTypes.DEFAULT_TYPE):
     effective_user = update.effective_user
-    effective_user = update.effective_user
     async with session_maker() as session:
         user_repo = repos.UserRepo(session)
         is_admin = await user_repo.is_admin(effective_user.id)
@@ -86,9 +85,10 @@ async def position(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    lang = context.chat_data.get('lang')
+    lang = context.chat_data.get('lang') #TODO: add cancel btn
     await update.message.reply_text(
-        text['canceled'][lang or 'ru']
+        text['canceled'][lang or 'ru'],
+        reply_markup=keyboards.get_admin_main_menu_keyboard()
     )
 
     return ConversationHandler.END

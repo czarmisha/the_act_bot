@@ -2,11 +2,9 @@ import logging
 from telegram import Update
 from telegram.ext import (
     ContextTypes,
-    MessageHandler,
     CommandHandler,
     CallbackQueryHandler,
     ConversationHandler,
-    filters,
 )
 
 import the_act_bot.src.repos as repos
@@ -35,7 +33,7 @@ async def brand_remove(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await context.bot.send_message(text=text['not_admin'])
 
         brand_repo = repos.BrandRepo(session)
-        brand = await brand_repo.get_by_id(brand_id)
+        brand = await brand_repo.get_by_id(int(brand_id))
         if not brand:
             await context.bot.send_message(text=text['no_brands'])
             return ConversationHandler.END
@@ -43,7 +41,8 @@ async def brand_remove(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await query.edit_message_text(
         text=f"Точно удалить?\n\n{info_text}\n\nВместе будут удалены все связанные объекты",
-        reply_markup=keyboards.get_remove_confirmation_keyboard(prefix='brand', id=int(brand_id))
+        reply_markup=keyboards.get_remove_confirmation_keyboard(prefix='brand', id=int(brand_id)),
+        parse_mode='HTML'
     )
     return ACTION
 
@@ -65,24 +64,26 @@ async def action(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await context.bot.send_message(text=text['not_admin'])
 
         brand_repo = repos.BrandRepo(session)
-        await brand_repo.remove(brand_id=int(query.data.split('_')[-2]))
+        await brand_repo.remove(id=int(query.data.split('_')[-2]))
         
 
-    await query.edit_message_text(text="Готово, бренд удален", reply_markup=keyboards.get_admin_main_menu_keyboard())
+    await context.bot.delete_message(chat_id=query.message.chat_id, message_id=query.message.message_id)
+    await context.bot.send_message(chat_id=query.message.chat_id, text="Бренд удален", reply_markup=keyboards.get_admin_main_menu_keyboard())
     return ConversationHandler.END
 
 
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     lang = context.chat_data.get('lang') #TODO: add cancel btn
     await update.message.reply_text(
-        text['canceled'][lang or 'ru']
+        text['canceled'][lang or 'ru'],
+        reply_markup=keyboards.get_admin_main_menu_keyboard()
     )
 
     return ConversationHandler.END
 
 
 brand_remove_handler = ConversationHandler(
-    entry_points=[CallbackQueryHandler(brand_remove, pattern="^brand_remove_")],
+    entry_points=[CallbackQueryHandler(brand_remove, pattern="^brand_remove_\d+$")],
     states={
         ACTION: [CallbackQueryHandler(action, pattern="^brand_remove_confirmation_")],
     },

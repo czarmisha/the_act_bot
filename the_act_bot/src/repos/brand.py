@@ -42,6 +42,9 @@ class BrandRepo(SQLAlchemyRepo):
         return result
     
     async def update(self, id: int, brand_in: schemas.BrandIn):
+        if not brand_in.model_dump(exclude_none=True):
+            return True
+        
         stmt = (
             update(Brand)
             .where(Brand.id == id)

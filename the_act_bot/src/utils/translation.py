@@ -94,4 +94,14 @@ text = {
         'uz': 'Siz administrator emassiz',
         'en': 'You are not an administrator',
     },
+    'canceled': {
+        'ru': 'Отменено',
+        'uz': 'Bekor qilindi',
+        'en': 'Cancelled',
+    },
+    'cancel': {
+        'ru': 'Отменить',
+        'uz': 'Bekor qilish',
+        'en': 'Cancel',
+    },
 }

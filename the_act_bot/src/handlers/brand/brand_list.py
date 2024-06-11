@@ -57,7 +57,7 @@ async def action(update: Update, context: ContextTypes.DEFAULT_TYPE):
         brand = await repos.BrandRepo(session).get_by_id(int(brand_id))
         info_text = f"<b>Имя: {brand.name}</b>\nПозиция: {brand.position}"
     
-        await query.edit_message_text(text=info_text, parse_mode='HTML', reply_markup=keyboards.get_action_keyboard('brand'))
+        await query.edit_message_text(text=info_text, parse_mode='HTML', reply_markup=keyboards.get_action_keyboard('brand', int(brand_id)))
 
     return ConversationHandler.END
 
@@ -65,7 +65,8 @@ async def action(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     lang = context.chat_data.get('lang') #TODO: add cancel btn
     await update.message.reply_text(
-        text['canceled'][lang or 'ru']
+        text['canceled'][lang or 'ru'],
+        reply_markup=keyboards.get_admin_main_menu_keyboard()
     )
 
     return ConversationHandler.END
