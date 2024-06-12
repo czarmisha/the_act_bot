@@ -1,3 +1,4 @@
+import typing
 from sqlalchemy import insert, select, update, delete
 
 from the_act_bot.src.database import enums
@@ -25,7 +26,7 @@ class BrandRepo(SQLAlchemyRepo):
         await self._session.commit()
         return schemas.BrandOut.model_validate(brand)
     
-    async def list(self) -> list[schemas.BrandOut]:
+    async def list(self) -> typing.List[schemas.BrandOut]:
         query = select(Brand).order_by(Brand.position)
         brands = await self._session.scalars(query)
 

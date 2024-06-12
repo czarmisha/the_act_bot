@@ -35,7 +35,7 @@ async def brand_list(update: Update, context: ContextTypes.DEFAULT_TYPE):
         brand_repo = repos.BrandRepo(session)
         brands = await brand_repo.list()
         if not brands:
-            await update.message.reply_text(text['no_brands'])
+            await update.message.reply_text(text['no_brands']['ru'])
             return ConversationHandler.END
 
     await update.message.reply_text(text="Для действий, выберите бренд из списка ниже:", reply_markup=keyboards.get_instance_keyboard('brand', brands))

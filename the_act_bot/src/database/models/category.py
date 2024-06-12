@@ -10,6 +10,8 @@ class Category(models.BaseModel):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[dict[str, str]] = mapped_column(MutableDict.as_mutable(JSONB()), nullable=False)
+    position: Mapped[int] = mapped_column(nullable=False, default=1)
+    active: Mapped[bool] = mapped_column(nullable=False, default=True)
     brand_id: Mapped[int] = mapped_column(ForeignKey("brands.id"))
 
     product_categories: Mapped[list["models.ProductCategory"]] = relationship(

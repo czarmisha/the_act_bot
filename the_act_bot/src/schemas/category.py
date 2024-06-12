@@ -1,18 +1,20 @@
 from pydantic import BaseModel, ConfigDict
 
 
-class Brand(BaseModel):
+class Category(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     name: str | None = None
+    brand_id: int | None = None
     position: int | None = None
     active: bool | None = None
 
 
-class BrandIn(BaseModel):
+class CategoryIn(BaseModel):
     name: str | None = None
+    brand_id: int | None = None
     position: int | None = None
 
 
-class BrandOut(Brand):
+class CategoryOut(Category):
     id: int

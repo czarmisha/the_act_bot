@@ -89,6 +89,16 @@ text = {
         'uz': 'Brendni qo`shish',
         'en': 'Add brand',
     },
+    'list_category': {
+        'ru': 'Список категорий',
+        'uz': 'Kategoriyalarni ro`yxat',
+        'en': 'List of categories',
+    },
+    'add_category': {
+        'ru': 'Добавить категорию',
+        'uz': 'Kategoriyani qo`shish',
+        'en': 'Add category',
+    },
     'not_admin': {
         'ru': 'Вы не администратор',
         'uz': 'Siz administrator emassiz',
@@ -108,5 +118,20 @@ text = {
         'ru': 'Аналитика',
         'uz': 'Analitika',
         'en': 'Analytics',
-    }
+    },
+    'no_brands': {
+        'ru': 'Бренды не найдены',
+        'uz': 'Brendlar topilmadi',
+        'en': 'Brands not found',
+    },
+    'no_categories': {
+        'ru': 'Категории не найдены',
+        'uz': 'Kategoriyalar topilmadi',
+        'en': 'Categories not found',
+    },
+    'no_products': {
+        'ru': 'Продукты не найдены',
+        'uz': 'Mahsulotlar topilmadi',
+        'en': 'Products not found',
+    },
 }
