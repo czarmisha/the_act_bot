@@ -89,6 +89,11 @@ text = {
         'uz': 'Brendni qo`shish',
         'en': 'Add brand',
     },
+    'add_category': {
+        'ru': 'Добавить категорию',
+        'uz': 'Kategoriyani qo`shish',
+        'en': 'Add category',
+    },
     'list_category': {
         'ru': 'Список категорий',
         'uz': 'Kategoriyalarni ro`yxat',

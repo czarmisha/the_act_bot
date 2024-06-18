@@ -1,7 +1,6 @@
 import typing
 from sqlalchemy import insert, select, update, delete
 
-from the_act_bot.src.database import enums
 from the_act_bot.src.database.models import Category
 from the_act_bot.src.schemas import category as schemas
 

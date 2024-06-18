@@ -54,7 +54,7 @@ async def name(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def position(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    effective_user = update.effective_user #TODO: add decorator check for user type
+    effective_user = update.effective_user
     async with session_maker() as session:
         user_repo = repos.UserRepo(session)
         is_admin = await user_repo.is_admin(effective_user.id)
