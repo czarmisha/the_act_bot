@@ -6,13 +6,14 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 import the_act_bot.src.database.models as models
 
 
-class Product(models.BaseModel):
+class Product(models.BaseModel):  # TODO: variants?
     __tablename__ = "products"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(100), nullable=False)
     description: Mapped[dict[str, str]] = mapped_column(MutableDict.as_mutable(JSONB()), nullable=False)
     price: Mapped[int] = mapped_column(nullable=False)
+    stock: Mapped[int] = mapped_column(nullable=False, default=0)
     discount_id: Mapped[int] = mapped_column(ForeignKey("discounts.id"), nullable=True)
 
     images: Mapped[list["models.Image"]] = relationship("Image", back_populates="product")

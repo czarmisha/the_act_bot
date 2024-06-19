@@ -56,6 +56,7 @@ def get_admin_main_menu_keyboard() -> ReplyKeyboardMarkup:
         resize_keyboard=True,
     )
 
+
 def get_action_keyboard(prefix: str, brand_id: int) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup([
         [
@@ -64,10 +65,12 @@ def get_action_keyboard(prefix: str, brand_id: int) -> InlineKeyboardMarkup:
         ]
     ])
 
+
 def get_instance_keyboard(prefix: str, instances: list, lang: str = 'ru') -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         [[InlineKeyboardButton(text=i.name[lang], callback_data=f"{prefix}_instance_{i.id}")] for i in instances]
     )
+
 
 def get_remove_confirmation_keyboard(prefix: str, id: int) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
@@ -89,4 +92,16 @@ def get_category_parents_keyboard(brands: list) -> InlineKeyboardMarkup:
 def get_category_add_brand_list(brands: list) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         [[InlineKeyboardButton(text=i.name, callback_data=f"category_add_brand_{i.id}")] for i in brands]
+    )
+
+
+def get_product_add_brand_list(brands: list) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        [[InlineKeyboardButton(text=i.name, callback_data=f"product_add_brand_{i.id}")] for i in brands]
+    )
+
+
+def get_product_add_category_list(categories: list) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        [[InlineKeyboardButton(text=i.name['ru'], callback_data=f"product_add_category_{i.id}")] for i in categories]
     )

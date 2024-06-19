@@ -20,10 +20,10 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-NAME, POSITION = range(2)
+NAME, DESCRIPTION_RU, DESCRIPTION_UZ, DESCRIPTION_EN, STOCK, PRICE, BRAND, CATEGORY = range(8)
 
 
-async def brand_add(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def product_add(update: Update, context: ContextTypes.DEFAULT_TYPE):
     effective_user = update.effective_user
     async with session_maker() as session:
         user_repo = repos.UserRepo(session)
@@ -31,7 +31,7 @@ async def brand_add(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if not is_admin:
             await update.message.reply_text(text['not_admin'])
 
-    await update.message.reply_text(text="Введите имя бренда", reply_markup=ReplyKeyboardRemove())
+    await update.message.reply_text(text="Введите имя продукта", reply_markup=ReplyKeyboardRemove())
     return NAME
 
 
@@ -45,15 +45,15 @@ async def name(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     name = update.message.text
     if not name:
-        await update.message.reply_text("Введите имя бренда")
+        await update.message.reply_text("Введите имя продукта")
         return NAME
     
-    context.chat_data['new_brand_name'] = name
-    await update.message.reply_text("Введите позицию в списке брендов (число)")
-    return POSITION
+    context.chat_data['new_product_name'] = name
+    await update.message.reply_text("Введите описание продукта на русском")
+    return DESCRIPTION_RU
 
 
-async def position(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def description_ru(update: Update, context: ContextTypes.DEFAULT_TYPE):
     effective_user = update.effective_user
     async with session_maker() as session:
         user_repo = repos.UserRepo(session)
@@ -61,28 +61,158 @@ async def position(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if not is_admin:
             await update.message.reply_text(text['not_admin'])
 
-    position = update.message.text
-    if not position or not position.isdigit():
-        await update.message.reply_text("Введите позицию в списке брендов (число)")
-        return POSITION
-    
-    brand_name = context.chat_data.get('new_brand_name')
-    if not brand_name:
-        await update.message.reply_text("Введите имя бренда")
+    description = update.message.text
+    if not description:
+        await update.message.reply_text("Введите имя продукта")
         return NAME
+    
+    context.chat_data['new_product_description_ru'] = description
+    await update.message.reply_text("Введите описание продукта на узбекском")
+    return DESCRIPTION_UZ
+
+
+async def description_uz(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    effective_user = update.effective_user
+    async with session_maker() as session:
+        user_repo = repos.UserRepo(session)
+        is_admin = await user_repo.is_admin(effective_user.id)
+        if not is_admin:
+            await update.message.reply_text(text['not_admin'])
+
+    description = update.message.text
+    if not description:
+        await update.message.reply_text("Введите имя продукта")
+        return NAME
+    
+    context.chat_data['new_product_description_uz'] = description
+    await update.message.reply_text("Введите описание продукта на английском")
+    return DESCRIPTION_EN
+
+
+async def description_ru(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    effective_user = update.effective_user
+    async with session_maker() as session:
+        user_repo = repos.UserRepo(session)
+        is_admin = await user_repo.is_admin(effective_user.id)
+        if not is_admin:
+            await update.message.reply_text(text['not_admin'])
+
+    description = update.message.text
+    if not description:
+        await update.message.reply_text("Введите имя продукта")
+        return NAME
+    
+    context.chat_data['new_product_description_en'] = description
+    await update.message.reply_text("Введите количество продукции на складе (число)")
+    return STOCK
+
+
+async def stock(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    effective_user = update.effective_user
+    async with session_maker() as session:
+        user_repo = repos.UserRepo(session)
+        is_admin = await user_repo.is_admin(effective_user.id)
+        if not is_admin:
+            await update.message.reply_text(text['not_admin'])
+
+    stock = update.message.text
+    if not stock or not stock.isdigit():
+        await update.message.reply_text("Введите количество продукции на складе (число)")
+        return STOCK
+    
+    context.chat_data['new_product_stock'] = stock
+    await update.message.reply_text("Введите цену продажи в сумах (число)")
+    return PRICE
+
+
+async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    effective_user = update.effective_user
+    async with session_maker() as session:
+        user_repo = repos.UserRepo(session)
+        is_admin = await user_repo.is_admin(effective_user.id)
+        if not is_admin:
+            await update.message.reply_text(text['not_admin'])
+
+    price = update.message.text
+    if not price or not price.isdigit():
+        await update.message.reply_text("Введите цену продажи в сумах (число)")
+        return PRICE
     
     async with session_maker() as session:
         brand_repo = repos.BrandRepo(session)
-        await brand_repo.create(
-            brand_in=schemas.BrandIn(
-                name=brand_name,
-                position=int(position),
+        brands = await brand_repo.list()
+        if not brands:
+            await update.message.reply_text(text['no_brands']['ru'])
+            return ConversationHandler.END
+    
+    await update.message.reply_text("К какому бренду добавить продукт?", reply_markup=keyboards.get_product_add_brand_list(brands))
+    return BRAND
+
+
+async def brand(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    brand_id = query.data.split('_')[-1]
+
+    effective_user = update.effective_user
+    async with session_maker() as session:
+        user_repo = repos.UserRepo(session)
+        is_admin = await user_repo.is_admin(effective_user.id)
+        if not is_admin:
+            await context.bot.send_message(chat_id=update.effective_chat.id, text=text['not_admin'])
+    
+    async with session_maker() as session:
+        category_repo = repos.CategoryRepo(session)
+        categories = await category_repo.list_by_brand_id(brand_id)
+        if not categories:
+            await update.message.reply_text(text['no_categories']['ru'])
+            return ConversationHandler.END
+        
+    await query.edit_message_text(text="К какой категории добавить продукт?", reply_markup=keyboards.get_product_add_category_list(categories))
+    return CATEGORY
+
+
+async def category(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    category_id = query.data.split('_')[-1]
+
+    effective_user = update.effective_user
+    async with session_maker() as session:
+        user_repo = repos.UserRepo(session)
+        is_admin = await user_repo.is_admin(effective_user.id)
+        if not is_admin:
+            await context.bot.send_message(chat_id=update.effective_chat.id, text=text['not_admin'])
+
+        category_repo = repos.CategoryRepo(session)
+        category = await category_repo.get_by_id(category_id)
+        if not category:
+            await update.message.reply_text("Категория не найдена")
+            return ConversationHandler.END
+    
+    async with session_maker() as session:
+        product_repo = repos.ProductRepo(session)
+        product = await product_repo.create(
+            product_in=schemas.ProductIn(
+                name=context.chat_data['new_product_name'],
+                description={
+                    'ru': context.chat_data['new_product_description_ru'],
+                    'uz': context.chat_data['new_product_description_uz'],
+                    'en': context.chat_data['new_product_description_en']
+                },
+                stock=int(context.chat_data['new_product_stock']),
+                price=int(context.chat_data['new_product_price']),
             )
         )
+        await product_repo.add_category(
+            product_id=product.id,
+            category_id=category_id
+        )
     
-    await update.message.reply_text("Готово, бренд добавлен", reply_markup=keyboards.get_admin_main_menu_keyboard())
+    await query.edit_message_text(text="Готово, категория добавлена", reply_markup=keyboards.get_admin_main_menu_keyboard())
     return ConversationHandler.END
 
+# TODO add images
 
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     lang = context.chat_data.get('lang') #TODO: add cancel btn
@@ -94,8 +224,8 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     return ConversationHandler.END
 
 
-brand_add_handler = ConversationHandler(
-        entry_points=[MessageHandler(filters.TEXT & ~filters.COMMAND & filters.Regex(fr"^{text['add_brand']['ru']}$"), brand_add)],
+product_add_handler = ConversationHandler(
+        entry_points=[MessageHandler(filters.TEXT & ~filters.COMMAND & filters.Regex(fr"^{text['add_product']['ru']}$"), product_add)],
         states={
             NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, name)],
             POSITION: [MessageHandler(filters.TEXT & ~filters.COMMAND, position)],
