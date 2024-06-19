@@ -32,7 +32,7 @@ async def category_add(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if not is_admin:
             await update.message.reply_text(text['not_admin'])
 
-    await update.message.reply_text(text="Введите имя категории", reply_markup=ReplyKeyboardRemove())
+    await update.message.reply_text(text="Введите имя категории на 3 языках(ru, uz, en). Каждый с новой строки.\nПример:\n\nЯблоко\nOlma\nApple", reply_markup=ReplyKeyboardRemove())
     return NAME
 
 
@@ -44,12 +44,16 @@ async def name(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if not is_admin:
             await update.message.reply_text(text['not_admin'])
 
-    name = update.message.text #TODO: in 3langs
-    if not name:
-        await update.message.reply_text("Введите имя категории")
+    name = update.message.text.split('\n')
+    if not name or not len(name) == 3:
+        await update.message.reply_text("Введите имя категории на 3 языках(ru, uz, en). Каждый с новой строки.\nПример:\n\nЯблоко\nOlma\nApple")
         return NAME
     
-    context.chat_data['new_category_name'] = name
+    context.chat_data['new_category_name'] = {
+        'ru': name[0],
+        'uz': name[1],
+        'en': name[2]
+    }
     await update.message.reply_text("Введите позицию в списке категорий (число)")
     return POSITION
 
@@ -98,7 +102,7 @@ async def brand(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     category_name = context.chat_data.get('new_category_name')
     if not category_name:
-        await query.edit_message_text(text="Введите имя категории")
+        await query.edit_message_text(text="Введите имя категории на 3 языках(ru, uz, en). Каждый с новой строки.\nПример:\n\nЯблоко\nOlma\nApple")
         return NAME
     
     async with session_maker() as session:

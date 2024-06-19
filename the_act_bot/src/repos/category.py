@@ -17,6 +17,7 @@ class CategoryRepo(SQLAlchemyRepo):
             .values(
                 name=category_in.name,
                 position=category_in.position,
+                brand_id=category_in.brand_id,
             )
         )
 

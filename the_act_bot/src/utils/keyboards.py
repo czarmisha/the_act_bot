@@ -64,9 +64,9 @@ def get_action_keyboard(prefix: str, brand_id: int) -> InlineKeyboardMarkup:
         ]
     ])
 
-def get_instance_keyboard(prefix: str, instances: list) -> InlineKeyboardMarkup:
+def get_instance_keyboard(prefix: str, instances: list, lang: str = 'ru') -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
-        [[InlineKeyboardButton(text=i.name, callback_data=f"{prefix}_instance_{i.id}")] for i in instances]
+        [[InlineKeyboardButton(text=i.name[lang], callback_data=f"{prefix}_instance_{i.id}")] for i in instances]
     )
 
 def get_remove_confirmation_keyboard(prefix: str, id: int) -> InlineKeyboardMarkup:
