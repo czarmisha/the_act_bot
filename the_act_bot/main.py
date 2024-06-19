@@ -19,5 +19,6 @@ if __name__ == '__main__':
     application.add_handler(category.category_list_handler)
     application.add_handler(category.category_add_handler)
     application.add_handler(category.category_edit_handler)
+    application.add_handler(category.category_remove_handler)
 
     application.run_polling(allowed_updates=Update.ALL_TYPES)

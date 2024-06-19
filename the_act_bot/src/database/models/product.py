@@ -18,7 +18,7 @@ class Product(models.BaseModel):
     images: Mapped[list["models.Image"]] = relationship("Image", back_populates="product")
     discount: Mapped["models.Discount"] = relationship("Discount", back_populates="products")
     product_categories: Mapped[list["models.ProductCategory"]] = relationship(
-        "ProductCategory", back_populates="product"
+        "Category", secondary="product_categories", back_populates="product"
     )
 
 

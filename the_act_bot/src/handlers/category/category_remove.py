@@ -20,10 +20,10 @@ logger = logging.getLogger(__name__)
 
 CONFIRMATION, ACTION = range(2)
 
-async def brand_remove(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def category_remove(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-    brand_id = query.data.split('_')[-1]
+    category_id = query.data.split('_')[-1]
 
     effective_user = update.effective_user
     async with session_maker() as session:
@@ -32,16 +32,16 @@ async def brand_remove(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if not is_admin:
             await context.bot.send_message(text=text['not_admin'])
 
-        brand_repo = repos.BrandRepo(session)
-        brand = await brand_repo.get_by_id(int(brand_id))
-        if not brand:
-            await context.bot.send_message(text=text['no_brands'])
+        category_repo = repos.CategoryRepo(session)
+        category = await category_repo.get_by_id(int(category_id))
+        if not category:
+            await context.bot.send_message(text=text['no_categorys'])
             return ConversationHandler.END
-    info_text = f"<b>Имя: {brand.name}</b>\nПозиция: {brand.position}"
+    info_text = f"<b>Имя: {category.name}</b>\nПозиция: {category.position}"
 
     await query.edit_message_text(
-        text=f"Точно удалить?\n\n{info_text}\n\nВместе будут удалены все связанные объекты",
-        reply_markup=keyboards.get_remove_confirmation_keyboard(prefix='brand', id=int(brand_id)),
+        text=f"Точно удалить?\n\n{info_text}\n\nВместе будут удалены все связанные объекты(Например продукты)",
+        reply_markup=keyboards.get_remove_confirmation_keyboard(prefix='category', id=int(category_id)),
         parse_mode='HTML'
     )
     return ACTION
@@ -63,8 +63,8 @@ async def action(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if not is_admin:
             await context.bot.send_message(text=text['not_admin'])
 
-        brand_repo = repos.BrandRepo(session)
-        await brand_repo.remove(id=int(query.data.split('_')[-2]))
+        category_repo = repos.CategoryRepo(session)
+        await category_repo.remove(id=int(query.data.split('_')[-2]))
         
 
     await context.bot.delete_message(chat_id=query.message.chat_id, message_id=query.message.message_id)
@@ -82,11 +82,10 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     return ConversationHandler.END
 
 
-brand_remove_handler = ConversationHandler(
-    entry_points=[CallbackQueryHandler(brand_remove, pattern="^brand_remove_\d+$")],
+category_remove_handler = ConversationHandler(
+    entry_points=[CallbackQueryHandler(category_remove, pattern="^category_remove_\d+$")],
     states={
-        ACTION: [CallbackQueryHandler(action, pattern="^brand_remove_confirmation_")],
+        ACTION: [CallbackQueryHandler(action, pattern="^category_remove_confirmation_")],
     },
     fallbacks=[CommandHandler("cancel", cancel)]
 )
-
