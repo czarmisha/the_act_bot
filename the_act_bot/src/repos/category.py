@@ -50,7 +50,7 @@ class CategoryRepo(SQLAlchemyRepo):
 
         return result
     
-    async def update(self, id: int, category_in: schemas.CategoryIn):
+    async def update(self, id: int, category_in: schemas.Category):
         if not category_in.model_dump(exclude_none=True):
             return True
         

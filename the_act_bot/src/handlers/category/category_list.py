@@ -77,7 +77,7 @@ async def action(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await context.bot.send_message(chat_id=update.effective_chat.id, text=text['not_admin'])
 
         category = await repos.CategoryRepo(session).get_by_id(int(category_id))
-        info_text = f"<b>Имя: {category.name}</b>\nПозиция: {category.position}"
+        info_text = f"<b>Имя: {category.name}</b>\nПозиция: {category.position}\nАктивна: {'Да' if category.active else 'Нет'}"
     
         await query.edit_message_text(text=info_text, parse_mode='HTML', reply_markup=keyboards.get_action_keyboard('category', int(category_id)))
 

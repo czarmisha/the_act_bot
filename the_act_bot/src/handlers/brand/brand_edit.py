@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 NAME, POSITION = range(2)
 
-async def brand_remove(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def brand_edit(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     brand_id = query.data.split('_')[-1]
@@ -102,7 +102,7 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 
 brand_edit_handler = ConversationHandler(
-    entry_points=[CallbackQueryHandler(brand_remove, pattern="^brand_edit_\d+$")],
+    entry_points=[CallbackQueryHandler(brand_edit, pattern="^brand_edit_\d+$")],
     states={
         NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, name)],
         POSITION: [MessageHandler(filters.TEXT & ~filters.COMMAND, position)],
