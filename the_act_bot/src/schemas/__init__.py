@@ -4,3 +4,4 @@ from .category import *
 from .product import *
 from .cart import *
 from .payment import *
+from .image import *

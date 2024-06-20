@@ -18,8 +18,8 @@ class Product(models.BaseModel):  # TODO: variants?
 
     images: Mapped[list["models.Image"]] = relationship("Image", back_populates="product")
     discount: Mapped["models.Discount"] = relationship("Discount", back_populates="products")
-    product_categories: Mapped[list["models.ProductCategory"]] = relationship(
-        "Category", secondary="product_categories", back_populates="product"
+    product_categories: Mapped[list["ProductCategory"]] = relationship(
+        "ProductCategory", back_populates="product"
     )
 
 
@@ -30,7 +30,8 @@ class ProductCategory(models.BaseModel):
     product_id: Mapped[int] = mapped_column(ForeignKey("products.id"))
     category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"))
 
-    product: Mapped["models.Product"] = relationship("Product")
-    category: Mapped["models.Category"] = relationship("Category")
+    product: Mapped["Product"] = relationship("Product", back_populates="product_categories")
+    category: Mapped["models.Category"] = relationship("Category", back_populates="product_categories")
 
     __table_args__ = (UniqueConstraint("product_id", "category_id"),)
+

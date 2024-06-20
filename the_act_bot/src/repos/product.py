@@ -1,7 +1,8 @@
 import typing
 from sqlalchemy import insert, select, update, delete
+from sqlalchemy.dialects.postgresql import insert as postgres_insert
 
-from the_act_bot.src.database.models import Product
+from the_act_bot.src.database.models import Product, ProductCategory
 from the_act_bot.src.schemas import product as schemas
 
 from .base import SQLAlchemyRepo
@@ -44,10 +45,12 @@ class ProductRepo(SQLAlchemyRepo):
         return result
     
     async def add_category(self, product_id: int, category_id: int):
-        stmt = (
-            update(Product)
-            .where(Product.id == product_id)
-            .values(product_categories=Product.product_categories + [category_id])
+        stmt = postgres_insert(ProductCategory).values(
+            product_id=product_id,
+            category_id=category_id
+        ).on_conflict_do_update(
+            constraint='product_categories_pkey',
+            set_=dict(product_id=product_id, category_id=category_id)
         )
 
         await self._session.execute(stmt)

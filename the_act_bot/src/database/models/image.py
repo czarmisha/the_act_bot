@@ -8,7 +8,8 @@ class Image(models.BaseModel):
     __tablename__ = "images"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    url: Mapped[str] = mapped_column(String(100), nullable=False)
+    url: Mapped[str] = mapped_column(String(100), nullable=True)
+    file_unique_id: Mapped[str] = mapped_column(String(100), nullable=True)
     product_id: Mapped[int] = mapped_column(ForeignKey("products.id"))
 
     product: Mapped["models.Product"] = relationship("Product", back_populates="images")

@@ -15,7 +15,7 @@ class Category(models.BaseModel):
     brand_id: Mapped[int] = mapped_column(ForeignKey("brands.id"))
 
     product_categories: Mapped[list["models.ProductCategory"]] = relationship(
-        "Product", secondary="product_categories", back_populates="category", cascade="all, delete"
+        "ProductCategory", back_populates="category", cascade="all, delete"
     )
     brand: Mapped["models.Brand"] = relationship("Brand", back_populates="categories")
 

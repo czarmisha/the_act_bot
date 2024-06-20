@@ -4,6 +4,7 @@ from telegram.ext import (
     ContextTypes,
     MessageHandler,
     CommandHandler,
+    CallbackQueryHandler,
     ConversationHandler,
     filters,
 )
@@ -20,7 +21,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-NAME, DESCRIPTION_RU, DESCRIPTION_UZ, DESCRIPTION_EN, STOCK, PRICE, BRAND, CATEGORY = range(8)
+NAME, DESCRIPTION_RU, DESCRIPTION_UZ, DESCRIPTION_EN, STOCK, PRICE, BRAND, CATEGORY, IMAGES = range(9)
 
 
 async def product_add(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -89,7 +90,7 @@ async def description_uz(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return DESCRIPTION_EN
 
 
-async def description_ru(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def description_en(update: Update, context: ContextTypes.DEFAULT_TYPE):
     effective_user = update.effective_user
     async with session_maker() as session:
         user_repo = repos.UserRepo(session)
@@ -144,6 +145,8 @@ async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if not brands:
             await update.message.reply_text(text['no_brands']['ru'])
             return ConversationHandler.END
+        
+    context.chat_data['new_product_price'] = price
     
     await update.message.reply_text("К какому бренду добавить продукт?", reply_markup=keyboards.get_product_add_brand_list(brands))
     return BRAND
@@ -163,7 +166,7 @@ async def brand(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     async with session_maker() as session:
         category_repo = repos.CategoryRepo(session)
-        categories = await category_repo.list_by_brand_id(brand_id)
+        categories = await category_repo.list_by_brand_id(int(brand_id))
         if not categories:
             await update.message.reply_text(text['no_categories']['ru'])
             return ConversationHandler.END
@@ -184,11 +187,11 @@ async def category(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if not is_admin:
             await context.bot.send_message(chat_id=update.effective_chat.id, text=text['not_admin'])
 
-        category_repo = repos.CategoryRepo(session)
-        category = await category_repo.get_by_id(category_id)
-        if not category:
-            await update.message.reply_text("Категория не найдена")
-            return ConversationHandler.END
+        # category_repo = repos.CategoryRepo(session)
+        # category = await category_repo.get_by_id(int(category_id))
+        # if not category:
+        #     await update.message.reply_text("Категория не найдена")
+        #     return ConversationHandler.END
     
     async with session_maker() as session:
         product_repo = repos.ProductRepo(session)
@@ -206,13 +209,44 @@ async def category(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         await product_repo.add_category(
             product_id=product.id,
-            category_id=category_id
+            category_id=int(category_id)
         )
     
-    await query.edit_message_text(text="Готово, категория добавлена", reply_markup=keyboards.get_admin_main_menu_keyboard())
+    context.chat_data['new_product_id'] = product.id
+    
+    await query.edit_message_text(text="Готово, теперь кидай картинки (все разом, не больше 3х)")
+    return IMAGES
+
+
+async def images(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    effective_user = update.effective_user
+    async with session_maker() as session:
+        user_repo = repos.UserRepo(session)
+        is_admin = await user_repo.is_admin(effective_user.id)
+        if not is_admin:
+            await update.message.reply_text(text['not_admin'])
+    
+    images = update.message.photo
+    if not images:
+        await update.message.reply_text("Кидай картинки")
+        return IMAGES
+    
+    async with session_maker() as session:
+        image_repo = repos.ImageRepo(session)
+        for image in images:
+            await image_repo.create(
+                schemas.ImageIn(
+                    product_id=int(context.chat_data['new_product_id']),
+                    file_unique_id=image.file_unique_id,
+                )
+            )
+    
+    await update.message.reply_text(
+        "Продукт добавлен, картинки сохранены",
+        reply_markup=keyboards.get_admin_main_menu_keyboard()
+    )
     return ConversationHandler.END
 
-# TODO add images
 
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     lang = context.chat_data.get('lang') #TODO: add cancel btn
@@ -228,7 +262,14 @@ product_add_handler = ConversationHandler(
         entry_points=[MessageHandler(filters.TEXT & ~filters.COMMAND & filters.Regex(fr"^{text['add_product']['ru']}$"), product_add)],
         states={
             NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, name)],
-            POSITION: [MessageHandler(filters.TEXT & ~filters.COMMAND, position)],
+            DESCRIPTION_RU: [MessageHandler(filters.TEXT & ~filters.COMMAND, description_ru)],
+            DESCRIPTION_UZ: [MessageHandler(filters.TEXT & ~filters.COMMAND, description_uz)],
+            DESCRIPTION_EN: [MessageHandler(filters.TEXT & ~filters.COMMAND, description_en)],
+            STOCK: [MessageHandler(filters.TEXT & ~filters.COMMAND, stock)],
+            PRICE: [MessageHandler(filters.TEXT & ~filters.COMMAND, price)],
+            BRAND: [CallbackQueryHandler(brand, pattern='^product_add_brand_')],
+            CATEGORY: [CallbackQueryHandler(category, pattern='^product_add_category_')],
+            IMAGES: [MessageHandler(filters.PHOTO, images)],
         },
         fallbacks=[CommandHandler("cancel", cancel)]
     )
