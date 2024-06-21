@@ -1,8 +1,7 @@
 import typing
 from sqlalchemy import insert, select, update, delete
-from sqlalchemy.dialects.postgresql import insert as postgres_insert
 
-from the_act_bot.src.database.models import Image, ImageCategory
+from the_act_bot.src.database.models import Image
 from the_act_bot.src.schemas import image as schemas
 
 from .base import SQLAlchemyRepo

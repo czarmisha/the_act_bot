@@ -1,5 +1,5 @@
 import logging
-from telegram import Update, ReplyKeyboardRemove
+from telegram import Update, ReplyKeyboardRemove, PhotoSize
 from telegram.ext import (
     ContextTypes,
     MessageHandler,
@@ -186,12 +186,6 @@ async def category(update: Update, context: ContextTypes.DEFAULT_TYPE):
         is_admin = await user_repo.is_admin(effective_user.id)
         if not is_admin:
             await context.bot.send_message(chat_id=update.effective_chat.id, text=text['not_admin'])
-
-        # category_repo = repos.CategoryRepo(session)
-        # category = await category_repo.get_by_id(int(category_id))
-        # if not category:
-        #     await update.message.reply_text("Категория не найдена")
-        #     return ConversationHandler.END
     
     async with session_maker() as session:
         product_repo = repos.ProductRepo(session)
@@ -234,10 +228,13 @@ async def images(update: Update, context: ContextTypes.DEFAULT_TYPE):
     async with session_maker() as session:
         image_repo = repos.ImageRepo(session)
         for image in images:
+            img = await image.get_file()
             await image_repo.create(
                 schemas.ImageIn(
                     product_id=int(context.chat_data['new_product_id']),
-                    file_unique_id=image.file_unique_id,
+                    tg_file_path=img.file_path,
+                    tg_file_id=img.file_id,
+                    tg_file_unique_id=img.file_unique_id,
                 )
             )
     
