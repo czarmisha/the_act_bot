@@ -1,5 +1,5 @@
 import logging
-from telegram import Update, ReplyKeyboardRemove, PhotoSize
+from telegram import Update, ReplyKeyboardRemove
 from telegram.ext import (
     ContextTypes,
     MessageHandler,

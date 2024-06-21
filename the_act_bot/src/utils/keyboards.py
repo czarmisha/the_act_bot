@@ -89,6 +89,12 @@ def get_category_parents_keyboard(brands: list) -> InlineKeyboardMarkup:
     )
 
 
+def get_product_parents_keyboard(brands: list, prefix: str = 'brand') -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        [[InlineKeyboardButton(text=i.name, callback_data=f"product_{prefix}_parent_{i.id}")] for i in brands]
+    )
+
+
 def get_category_add_brand_list(brands: list) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         [[InlineKeyboardButton(text=i.name, callback_data=f"category_add_brand_{i.id}")] for i in brands]

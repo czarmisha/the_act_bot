@@ -79,3 +79,9 @@ class ProductRepo(SQLAlchemyRepo):
 
         await self._session.execute(stmt)
         await self._session.commit()
+    
+    async def get_by_category_id(self, category_id: int) -> typing.List[schemas.ProductOut]:
+        stmt = select(Product).join(ProductCategory).where(ProductCategory.category_id == category_id)
+        products = await self._session.scalars(stmt)
+
+        return [schemas.ProductOut.model_validate(product) for product in products]
