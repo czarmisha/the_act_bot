@@ -61,3 +61,9 @@ class ImageRepo(SQLAlchemyRepo):
 
         await self._session.execute(stmt)
         await self._session.commit()
+
+    async def get_by_product_id(self, product_id: int) -> typing.List[schemas.ImageOut]:
+        query = select(Image).where(Image.product_id == product_id)
+        images = await self._session.scalars(query)
+
+        return [schemas.ImageOut.model_validate(image) for image in images]

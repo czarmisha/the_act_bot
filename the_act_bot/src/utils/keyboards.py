@@ -69,6 +69,8 @@ def get_action_keyboard(prefix: str, brand_id: int) -> InlineKeyboardMarkup:
 def get_instance_keyboard(prefix: str, instances: list, lang: str = 'ru') -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         [[InlineKeyboardButton(text=i.name[lang], callback_data=f"{prefix}_instance_{i.id}")] for i in instances]
+    ) if prefix == 'category' else InlineKeyboardMarkup(
+        [[InlineKeyboardButton(text=i.name, callback_data=f"{prefix}_instance_{i.id}")] for i in instances]
     )
 
 
@@ -92,6 +94,8 @@ def get_category_parents_keyboard(brands: list) -> InlineKeyboardMarkup:
 def get_product_parents_keyboard(brands: list, prefix: str = 'brand') -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         [[InlineKeyboardButton(text=i.name, callback_data=f"product_{prefix}_parent_{i.id}")] for i in brands]
+    ) if prefix == 'brand' else InlineKeyboardMarkup(
+        [[InlineKeyboardButton(text=i.name['ru'], callback_data=f"product_{prefix}_parent_{i.id}")] for i in brands]
     )
 
 

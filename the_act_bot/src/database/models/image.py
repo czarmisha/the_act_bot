@@ -11,6 +11,6 @@ class Image(models.BaseModel):
     tg_file_path: Mapped[str] = mapped_column(String(100), nullable=True)
     tg_file_unique_id: Mapped[str] = mapped_column(String(100), nullable=True)
     tg_file_id: Mapped[str] = mapped_column(nullable=True)
-    product_id: Mapped[int] = mapped_column(ForeignKey("products.id"))
+    product_id: Mapped[int] = mapped_column(ForeignKey("products.id", ondelete="CASCADE"))
 
     product: Mapped["models.Product"] = relationship("Product", back_populates="images")

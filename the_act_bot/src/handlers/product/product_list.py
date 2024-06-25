@@ -44,7 +44,7 @@ async def product_list(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def category_select(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
-    query.answer()
+    await query.answer()
     brand_id = query.data.split('_')[-1]
     effective_user = update.effective_user
     categories = []
@@ -100,8 +100,15 @@ async def action(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         product = await repos.ProductRepo(session).get_by_id(int(product_id))
         info_text = f"<b>Название: {product.name}</b>\nНа складе: {product.stock}\nЦена: {product.price}"
-    
-        await query.edit_message_text(text=info_text, parse_mode='HTML', reply_markup=keyboards.get_action_keyboard('product', int(product_id)))
+
+        image_repo = repos.ImageRepo(session)
+        images = await image_repo.get_by_product_id(int(product_id))
+        if images:
+            for image in images:
+                if image.tg_file_id:
+                    await context.bot.send_photo(chat_id=update.effective_chat.id, photo=image.tg_file_id)
+        await query.delete_message()
+        await context.bot.send_message(chat_id=update.effective_chat.id, text=info_text, parse_mode='HTML', reply_markup=keyboards.get_action_keyboard('product', int(product_id)))
 
     return ConversationHandler.END
 
@@ -119,7 +126,8 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 product_list_handler = ConversationHandler(
     entry_points=[MessageHandler(filters.TEXT & ~filters.COMMAND & filters.Regex(fr"^{text['list_product']['ru']}$"), product_list)],
     states={
-        INSTANCE: [CallbackQueryHandler(instance_list, pattern="^product_parent_")],
+        CATEGORY: [CallbackQueryHandler(category_select, pattern="^product_brand_parent_")],
+        INSTANCE: [CallbackQueryHandler(instance_list, pattern="^product_category_parent_")],
         ACTION: [CallbackQueryHandler(action, pattern="^product_instance_")],
     },
     fallbacks=[CommandHandler("cancel", cancel)]

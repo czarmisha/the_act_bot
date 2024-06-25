@@ -208,7 +208,7 @@ async def category(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     context.chat_data['new_product_id'] = product.id
     
-    await query.edit_message_text(text="Готово, теперь кидай картинки (все разом, не больше 3х)")
+    await query.edit_message_text(text="Готово, теперь кидай картинки продукта (1 фотка)")
     return IMAGES
 
 
@@ -220,26 +220,24 @@ async def images(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if not is_admin:
             await update.message.reply_text(text['not_admin'])
     
-    images = update.message.photo
-    if not images:
-        await update.message.reply_text("Кидай картинки")
+    img = await update.message.photo[-1].get_file()
+    if not img:
+        await update.message.reply_text("Кидайте картинки")
         return IMAGES
     
     async with session_maker() as session:
         image_repo = repos.ImageRepo(session)
-        for image in images:
-            img = await image.get_file()
-            await image_repo.create(
-                schemas.ImageIn(
-                    product_id=int(context.chat_data['new_product_id']),
-                    tg_file_path=img.file_path,
-                    tg_file_id=img.file_id,
-                    tg_file_unique_id=img.file_unique_id,
-                )
+        await image_repo.create(
+            schemas.ImageIn(
+                product_id=int(context.chat_data['new_product_id']),
+                tg_file_path=img.file_path,
+                tg_file_id=img.file_id,
+                tg_file_unique_id=img.file_unique_id,
             )
+        )
     
     await update.message.reply_text(
-        "Продукт добавлен, картинки сохранены",
+        "Продукт добавлен, картинка сохранена",
         reply_markup=keyboards.get_admin_main_menu_keyboard()
     )
     return ConversationHandler.END

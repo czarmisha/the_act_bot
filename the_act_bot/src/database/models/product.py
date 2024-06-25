@@ -27,7 +27,7 @@ class ProductCategory(models.BaseModel):
     __tablename__ = "product_categories"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    product_id: Mapped[int] = mapped_column(ForeignKey("products.id"))
+    product_id: Mapped[int] = mapped_column(ForeignKey("products.id", ondelete="CASCADE"))
     category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"))
 
     product: Mapped["Product"] = relationship("Product", back_populates="product_categories")
