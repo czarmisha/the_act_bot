@@ -67,7 +67,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def language(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-    print('!'*55, query.data)
     answer = query.data.split('_')[1]
     context.chat_data['lang'] = answer
 

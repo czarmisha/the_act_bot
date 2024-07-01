@@ -5,22 +5,22 @@ text = {
         'en': 'An error occurred',
     },
     'start': {
-        'ru': 'Начало',
+        'ru': 'Давайте выберем язык обслуживания!',
         'uz': 'Boshlash',
         'en': 'Begin',
     },
     'start_final': {
-        'ru': 'Завершено',
+        'ru': 'Добро пожаловать в наш бот-помощник!\nНу что, приступим к покупкам?',
         'uz': 'Yakunlandi',
         'en': 'Finished',
     },
     'fio': {
-        'ru': 'Ваше ФИО',
+        'ru': 'Введите пожалуйста ваше имя',
         'uz': 'Sizning FIO',
         'en': 'Your FIO',
     },
     'phone': {
-        'ru': 'Отправить контакт',
+        'ru': 'Отправить мой контакт',
         'uz': 'Kontakt yuborish',
         'en': 'Send contact',
     },
@@ -34,10 +34,25 @@ text = {
         'uz': 'Magazin',
         'en': 'Shop',
     },
+    'select_category': {
+        'ru': 'Выберите категорию',
+        'uz': 'Kategoriyani tanlang',
+        'en': 'Choose a category',
+    },
+    'select_product': {
+        'ru': 'Выберите продукт',
+        'uz': 'Mahsulotni tanlang',
+        'en': 'Choose a product',
+    },
     'cart': {
         'ru': 'Корзина',
         'uz': 'Savat',
         'en': 'Cart',
+    },
+    'no_product': {
+        'ru': 'Продукты не найдены',
+        'uz': 'Mahsulotlar topilmadi',
+        'en': 'Products not found',
     },
     'order_history': {
         'ru': 'История заказов',
@@ -49,6 +64,28 @@ text = {
         'uz': 'Tilni o`zgartirish',
         'en': 'Change language',
     },
+    'select_brand': {
+        'ru': 'Выберите бренд',
+        'uz': 'Brendni tanlang',
+        'en': 'Choose a brand',
+    },
+    'brand_not_found': {
+        'ru': 'Бренд не найден',
+        'uz': 'Brend topilmadi',
+        'en': 'Brand not found',
+    },
+    'no_category': {
+        'ru': 'Категории не найдены',
+        'uz': 'Kategoriyalar topilmadi',
+        'en': 'Categories not found',
+    },
+    'back': {
+        'ru': 'Назад',
+        'uz': 'Orqaga',
+        'en': 'Back',
+    },
+
+    # admin
     'list_category': {
         'ru': 'Список категорий',
         'uz': 'Kategoriyalarni ro`yxat',
@@ -138,5 +175,15 @@ text = {
         'ru': 'Продукты не найдены',
         'uz': 'Mahsulotlar topilmadi',
         'en': 'Products not found',
+    },
+    'choose_brand': {
+        'ru': 'Давайте определимся с брендом',
+        'uz': 'Brendni tanlash',
+        'en': 'Choose a brand',
+    },
+    'choose_category': {
+        'ru': 'Давайте определимся с категорией',
+        'uz': 'Kategoriyani tanlash',
+        'en': 'Choose a category',
     },
 }

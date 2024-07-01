@@ -35,6 +35,34 @@ def get_main_menu_keyboard() -> ReplyKeyboardMarkup:
     )
 
 
+def get_brand_keyboard_markup(brands: list) -> ReplyKeyboardMarkup:
+    keyboard = [[KeyboardButton(text=i.name)] for i in brands]
+    keyboard.append([KeyboardButton(text=text['back']['ru'])])
+    return ReplyKeyboardMarkup(
+        keyboard,
+        resize_keyboard=True,
+    )
+
+
+def get_category_keyboard_markup(categories: list, lang: str = 'ru') -> ReplyKeyboardMarkup:
+    keyboard = [[KeyboardButton(text=i.name[lang])] for i in categories]
+    keyboard.append([KeyboardButton(text=text['back']['ru'])])
+    return ReplyKeyboardMarkup(
+        keyboard,
+        resize_keyboard=True,
+    )
+
+
+def get_product_keyboard_markup(products: list, lang: str = 'ru') -> ReplyKeyboardMarkup:
+    keyboard = [[KeyboardButton(text=i.name)] for i in products]
+    keyboard.append([KeyboardButton(text=text['back'][lang])])
+    return ReplyKeyboardMarkup(
+        keyboard,
+        resize_keyboard=True,
+    )
+
+
+# admin keyboards
 def get_admin_main_menu_keyboard() -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
         [

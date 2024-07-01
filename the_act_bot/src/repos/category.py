@@ -1,5 +1,5 @@
 import typing
-from sqlalchemy import insert, select, update, delete
+from sqlalchemy import insert, select, update, delete, or_
 
 from the_act_bot.src.database.models import Category
 from the_act_bot.src.schemas import category as schemas
@@ -32,9 +32,26 @@ class CategoryRepo(SQLAlchemyRepo):
 
         return [schemas.CategoryOut.model_validate(category) for category in categories]
     
+    async def get_by_name_and_brand_id(self, name: str, brand_id: int) -> Category:
+        stmt = select(Category).where(
+            or_(
+                Category.name['ru'].astext == name,
+                Category.name['uz'].astext == name,
+                Category.name['en'].astext == name,
+            ),
+            Category.brand_id == brand_id
+        )
 
-    async def list_by_brand_id(self, id: int) -> typing.List[schemas.CategoryOut]:
-        query = select(Category).where(Category.brand_id == id).order_by(Category.position)
+        result = await self._session.scalar(stmt)
+
+        if result is None:
+            return
+
+        return result
+    
+
+    async def list_by_brand_id(self, brand_id: int) -> typing.List[schemas.CategoryOut]:
+        query = select(Category).where(Category.brand_id == brand_id).order_by(Category.position)
         categories = await self._session.scalars(query)
 
         return [schemas.CategoryOut.model_validate(category) for category in categories]

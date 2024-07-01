@@ -42,6 +42,16 @@ class BrandRepo(SQLAlchemyRepo):
 
         return result
     
+    async def get_by_name(self, name: str) -> Brand:
+        stmt = select(Brand).where(Brand.name == name)
+
+        result = await self._session.scalar(stmt)
+
+        if result is None:
+            return
+
+        return result
+    
     async def update(self, id: int, brand_in: schemas.BrandIn):
         if not brand_in.model_dump(exclude_none=True):
             return True

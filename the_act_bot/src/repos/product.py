@@ -3,6 +3,7 @@ from sqlalchemy import insert, select, update, delete
 from sqlalchemy.dialects.postgresql import insert as postgres_insert
 
 from the_act_bot.src.database.models import Product, ProductCategory
+from the_act_bot.src.database.models.category import Category
 from the_act_bot.src.schemas import product as schemas
 
 from .base import SQLAlchemyRepo
@@ -31,6 +32,18 @@ class ProductRepo(SQLAlchemyRepo):
     async def list(self) -> typing.List[schemas.ProductOut]:
         query = select(Product).order_by(Product.position)
         products = await self._session.scalars(query)
+
+        return [schemas.ProductOut.model_validate(product) for product in products]
+    
+    async def list_by_brand_and_category(self, category_id: int, brand_id: int) -> typing.List[schemas.ProductOut]:
+        stmt = (
+            select(Product)
+            .join(ProductCategory)
+            .join(Category)
+            .where(Category.id == category_id, Category.brand_id == brand_id)
+        )
+
+        products = await self._session.scalars(stmt)
 
         return [schemas.ProductOut.model_validate(product) for product in products]
 
