@@ -124,7 +124,7 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 
 product_list_handler = ConversationHandler(
-    entry_points=[MessageHandler(filters.TEXT & ~filters.COMMAND & filters.Regex(fr"^{text['list_product']['ru']}$"), product_list)],
+    entry_points=[MessageHandler(~filters.COMMAND & filters.Regex(f"^{text['list_product']['ru']}$"), product_list)],
     states={
         CATEGORY: [CallbackQueryHandler(category_select, pattern="^product_brand_parent_")],
         INSTANCE: [CallbackQueryHandler(instance_list, pattern="^product_category_parent_")],

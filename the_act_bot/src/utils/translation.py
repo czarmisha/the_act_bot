@@ -44,6 +44,11 @@ text = {
         'uz': 'Mahsulotni tanlang',
         'en': 'Choose a product',
     },
+    'add_to_cart': {
+        'ru': 'Добавить в корзину',
+        'uz': 'Savatga qo`shish',
+        'en': 'Add to cart',
+    },
     'cart': {
         'ru': 'Корзина',
         'uz': 'Savat',

@@ -23,6 +23,16 @@ def get_lang_keyboard_markup() -> InlineKeyboardMarkup:
     ])
 
 
+def get_add_keyboard(lang: str = 'ru') -> ReplyKeyboardMarkup:
+    return ReplyKeyboardMarkup(
+        [
+            [KeyboardButton(text=text['cart'][lang])],
+            [KeyboardButton(text=text['back'][lang])]
+        ],
+        resize_keyboard=True,
+    )
+
+
 def get_main_menu_keyboard() -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
         [
@@ -32,6 +42,19 @@ def get_main_menu_keyboard() -> ReplyKeyboardMarkup:
             [KeyboardButton(text=text['change_lang']['ru'])],
         ],
         resize_keyboard=True,
+    )
+
+
+def add_product_to_cart(product_id: int, lang: str = 'ru', to_add: int = 1) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(text='-', callback_data=f"product_minus_{product_id}_{to_add}"),
+                InlineKeyboardButton(text=str(to_add), callback_data="ignore"),
+                InlineKeyboardButton(text='+', callback_data=f"product_plus_{product_id}_{to_add}")
+            ],
+            [InlineKeyboardButton(text=text['add_to_cart'][lang], callback_data=f"add_to_cart_{product_id}")]
+        ]
     )
 
 
