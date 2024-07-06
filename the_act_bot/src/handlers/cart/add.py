@@ -1,0 +1,103 @@
+import logging
+from telegram import Update
+from telegram.ext import (
+    ContextTypes,
+    MessageHandler,
+    CommandHandler,
+    CallbackQueryHandler,
+    ConversationHandler,
+    filters,
+)
+
+import the_act_bot.src.repos as repos
+import the_act_bot.src.utils.keyboards as keyboards
+from the_act_bot.src.database.session import session_maker
+from the_act_bot.src.utils.translation import text
+
+
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
+)
+logger = logging.getLogger(__name__)
+
+
+async def cart_add(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    lang = context.user_data.get('lang')
+    user = None
+    cart = None
+    if not lang:
+        async with session_maker() as session:
+            user_repo = repos.UserRepo(session)
+            user = await user_repo.get_by_telegram_id(update.effective_user.id)
+            lang = user.lang
+            context.user_data['lang'] = lang
+            cart = await user_repo.get_cart(user.id)
+
+    query = update.callback_query
+    await query.answer()
+    product_id = query.data.split('_')[-2]
+    to_add = query.data.split('_')[-1]
+
+    if not cart:
+        async with session_maker() as session:
+            cart_repo = repos.CartRepo(session)
+            cart = await cart_repo.create_cart(user.id)
+            cart_item_repo = repos.CartItemRepo(session)
+            cart_item = await cart_item_repo.add_item(cart.id, product_id, to_add)
+    else:
+        async with session_maker() as session:
+            cart_item_repo = repos.CartItemRepo(session)
+            cart_item = await cart_item_repo.add_item(cart.id, product_id, to_add)
+    
+    await query.edit_message_reply_markup(reply_markup=keyboards.add_product_to_cart(int(product_id), lang, to_add))
+
+
+async def product_minus(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    lang = context.user_data.get('lang')
+    if not lang:
+        async with session_maker() as session:
+            user_repo = repos.UserRepo(session)
+            user = await user_repo.get_by_telegram_id(update.effective_user.id)
+            lang = user.lang
+            context.user_data['lang'] = lang
+
+    query = update.callback_query
+    await query.answer()
+    product_id = query.data.split('_')[-2]
+    to_add = query.data.split('_')[-1]
+    to_add = int(to_add) - 1
+    context.user_data['to_add'] = to_add
+    await query.edit_message_reply_markup(reply_markup=keyboards.add_product_to_cart(int(product_id), lang, to_add))
+
+
+async def product_plus(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    lang = context.user_data.get('lang')
+    if not lang:
+        async with session_maker() as session:
+            user_repo = repos.UserRepo(session)
+            user = await user_repo.get_by_telegram_id(update.effective_user.id)
+            lang = user.lang
+            context.user_data['lang'] = lang
+
+    query = update.callback_query
+    await query.answer()
+    product_id = query.data.split('_')[-2]
+    to_add = query.data.split('_')[-1]
+    to_add = int(to_add) + 1
+    context.user_data['to_add'] = to_add
+    await query.edit_message_reply_markup(reply_markup=keyboards.add_product_to_cart(int(product_id), lang, to_add))
+
+
+async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    lang = context.chat_data.get('lang') #TODO: add cancel btn
+    await update.message.reply_text(
+        text['canceled'][lang or 'ru'],
+        reply_markup=keyboards.get_admin_main_menu_keyboard()
+    )
+
+    return ConversationHandler.END
+
+
+cart_add_handler = CallbackQueryHandler(cart_add, pattern="^add_to_cart_")
+product_minus_handler = CallbackQueryHandler(product_minus, pattern="^product_minus_")
+product_plus_handler = CallbackQueryHandler(product_plus, pattern="^product_plus_")

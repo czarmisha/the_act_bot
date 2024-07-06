@@ -53,7 +53,7 @@ def add_product_to_cart(product_id: int, lang: str = 'ru', to_add: int = 1) -> I
                 InlineKeyboardButton(text=str(to_add), callback_data="ignore"),
                 InlineKeyboardButton(text='+', callback_data=f"product_plus_{product_id}_{to_add}")
             ],
-            [InlineKeyboardButton(text=text['add_to_cart'][lang], callback_data=f"add_to_cart_{product_id}")]
+            [InlineKeyboardButton(text=text['add_to_cart'][lang], callback_data=f"add_to_cart_{product_id}_{to_add}")]
         ]
     )
 
@@ -77,8 +77,10 @@ def get_category_keyboard_markup(categories: list, lang: str = 'ru') -> ReplyKey
 
 
 def get_product_keyboard_markup(products: list, lang: str = 'ru') -> ReplyKeyboardMarkup:
-    keyboard = [[KeyboardButton(text=i.name)] for i in products]
+    keyboard = [[KeyboardButton(text=text['cart'][lang])]]
+    keyboard.extend([[KeyboardButton(text=i.name)] for i in products])
     keyboard.append([KeyboardButton(text=text['back'][lang])])
+    print('!!!!!!!!!!!', keyboard)
     return ReplyKeyboardMarkup(
         keyboard,
         resize_keyboard=True,

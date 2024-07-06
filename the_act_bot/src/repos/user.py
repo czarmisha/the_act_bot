@@ -3,7 +3,7 @@ from uuid import UUID
 from sqlalchemy import insert, select, update
 
 from the_act_bot.src.database import enums
-from the_act_bot.src.database.models import User
+from the_act_bot.src.database.models import User, Cart
 from the_act_bot.src.schemas import user as schemas
 
 from .base import SQLAlchemyRepo
@@ -81,3 +81,10 @@ class UserRepo(SQLAlchemyRepo):
         await self._session.commit()
 
         return True
+    
+    async def get_cart(self, user_id: int) -> int:
+        stmt = select(Cart.id).where(Cart.user_id == user_id).limit(1)
+
+        result = await self._session.scalar(stmt)
+
+        return result

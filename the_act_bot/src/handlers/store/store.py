@@ -112,7 +112,6 @@ async def product(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         image_repo = repos.ImageRepo(session)
         images = await image_repo.get_by_product_id(int(product.id))
-        print('!!!!!', product.id, images)
         
     info_text = f"<b>Имя: {product.name}</b>\n\n{product.description[lang]}\n\nЦена: {product.price}"
     context.user_data['to_add_product_id'] = product.id
