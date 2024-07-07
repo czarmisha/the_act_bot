@@ -83,7 +83,7 @@ class UserRepo(SQLAlchemyRepo):
         return True
     
     async def get_cart(self, user_id: int) -> int:
-        stmt = select(Cart.id).where(Cart.user_id == user_id).limit(1)
+        stmt = select(Cart).where(Cart.user_id == user_id).limit(1)
 
         result = await self._session.scalar(stmt)
 

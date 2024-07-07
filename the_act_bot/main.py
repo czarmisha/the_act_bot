@@ -7,7 +7,8 @@ from the_act_bot.src.handlers import (
     brand,
     category,
     product,
-    store
+    store,
+    cart,
 )
 
 
@@ -17,6 +18,10 @@ if __name__ == '__main__':
     #user handlers
     application.add_handler(start_handler)
     application.add_handler(store.store_handler)
+
+    application.add_handler(cart.cart_add_handler)
+    application.add_handler(cart.product_minus_handler)
+    application.add_handler(cart.product_plus_handler)
 
     #admin handlers
     application.add_handler(brand.brand_add_handler)

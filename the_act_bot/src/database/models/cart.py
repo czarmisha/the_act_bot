@@ -1,4 +1,4 @@
-from sqlalchemy import ForeignKey, UniqueConstraint
+from sqlalchemy import ForeignKey, UniqueConstraint, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 import the_act_bot.src.database.models as models
@@ -23,6 +23,7 @@ class CartItem(models.BaseModel):
     id: Mapped[int] = mapped_column(primary_key=True)
     cart_id: Mapped[int] = mapped_column(ForeignKey("carts.id"))
     product_id: Mapped[int] = mapped_column(ForeignKey("products.id"))
+    quantity: Mapped[int]
 
     cart: Mapped["Cart"] = relationship("Cart", back_populates="items")
     product: Mapped["models.Product"] = relationship("Product")

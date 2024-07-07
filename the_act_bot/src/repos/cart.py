@@ -1,9 +1,12 @@
 from uuid import UUID
 
-from sqlalchemy import insert, select, update
+from sqlalchemy import insert, select
+from sqlalchemy.dialects.postgresql import insert as pg_insert
+
 
 from the_act_bot.src.database import enums
 from the_act_bot.src.database.models import Cart
+from the_act_bot.src.database.models.cart import CartItem
 from the_act_bot.src.schemas import cart as schemas
 
 from .base import SQLAlchemyRepo
@@ -11,44 +14,20 @@ from .base import SQLAlchemyRepo
 
 class CartRepo(SQLAlchemyRepo):
     async def create(
-        self, cart_in: schemas.CartIn
+        self, user_id: int
     ) -> schemas.CartOut:
         stmt = (
             insert(Cart)
             .returning(Cart)
             .values(
-                name=cart_in.name,
-                telegram_id=cart_in.telegram_id,
-                phone=cart_in.phone,
-                type=cart_in.type,
-                lang=cart_in.lang,
+                user_id=user_id
             )
         )
 
         cart = await self._session.scalar(stmt)
 
         await self._session.commit()
-        return schemas.CartOut.model_validate(cart)
-    
-    async def is_admin(self, telegram_id: int) -> bool:
-        stmt = select(Cart).where(Cart.telegram_id == telegram_id, Cart.type == enums.CartTypeEnums.ADMIN)
-
-        result = await self._session.scalar(stmt)
-
-        if result is None:
-            return False
-
-        return True
-
-    async def get_by_phone(self, phone: str) -> Cart:
-        stmt = select(Cart).where(Cart.phone == phone)
-
-        result = await self._session.scalar(stmt)
-
-        if result is None:
-            return
-
-        return result
+        return await schemas.CartOut.model_validate(cart)
 
     async def get_by_id(self, cart_id: int) -> Cart:
         stmt = select(Cart).where(Cart.id == cart_id)
@@ -60,8 +39,8 @@ class CartRepo(SQLAlchemyRepo):
 
         return result
     
-    async def get_by_telegram_id(self, telegram_id: int) -> Cart:
-        stmt = select(Cart).where(Cart.telegram_id == telegram_id)
+    async def get_by_user_id(self, user_id: int) -> Cart:
+        stmt = select(Cart).where(Cart.user_id == user_id)
 
         result = await self._session.scalar(stmt)
 
@@ -70,14 +49,25 @@ class CartRepo(SQLAlchemyRepo):
 
         return result
     
-    async def update(self, telegram_id: int ,cart_in: schemas.CartUpdate):
+    
+    async def add_item(
+        self, cart_id: int, product_id: int, quantity: int
+    ) -> schemas.CartItem:
         stmt = (
-            update(Cart)
-            .where(Cart.telegram_id == telegram_id)
-            .values(**cart_in.model_dump(exclude_none=True))
+            pg_insert(CartItem)
+            .values(
+                cart_id=cart_id,
+                product_id=product_id,
+                quantity=quantity
+            )
+            .on_conflict_do_update(
+                index_elements=[CartItem.cart_id, CartItem.product_id],
+                set_={"quantity": CartItem.quantity + quantity}
+            )
+            .returning(CartItem)
         )
-
-        await self._session.execute(stmt)
+    
+        cart_item = await self._session.scalar(stmt)
+    
         await self._session.commit()
-
-        return True
+        return cart_item

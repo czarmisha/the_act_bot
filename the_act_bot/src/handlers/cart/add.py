@@ -25,13 +25,13 @@ async def cart_add(update: Update, context: ContextTypes.DEFAULT_TYPE):
     lang = context.user_data.get('lang')
     user = None
     cart = None
-    if not lang:
-        async with session_maker() as session:
-            user_repo = repos.UserRepo(session)
-            user = await user_repo.get_by_telegram_id(update.effective_user.id)
+    async with session_maker() as session:
+        user_repo = repos.UserRepo(session)
+        user = await user_repo.get_by_telegram_id(update.effective_user.id)
+        cart = await user_repo.get_cart(user.id)
+        if not lang:
             lang = user.lang
             context.user_data['lang'] = lang
-            cart = await user_repo.get_cart(user.id)
 
     query = update.callback_query
     await query.answer()
@@ -41,15 +41,15 @@ async def cart_add(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not cart:
         async with session_maker() as session:
             cart_repo = repos.CartRepo(session)
-            cart = await cart_repo.create_cart(user.id)
-            cart_item_repo = repos.CartItemRepo(session)
-            cart_item = await cart_item_repo.add_item(cart.id, product_id, to_add)
+            cart = await cart_repo.create(user.id)
+            cart = await cart_repo.add_item(cart.id, int(product_id), int(to_add))
     else:
         async with session_maker() as session:
-            cart_item_repo = repos.CartItemRepo(session)
-            cart_item = await cart_item_repo.add_item(cart.id, product_id, to_add)
+            cart_repo = repos.CartRepo(session)
+            cart = await cart_repo.add_item(cart.id, int(product_id), int(to_add))
     
-    await query.edit_message_reply_markup(reply_markup=keyboards.add_product_to_cart(int(product_id), lang, to_add))
+    await context.bot.delete_message(chat_id=update.effective_chat.id, message_id=query.message.message_id)
+    await context.bot.send_message(chat_id=update.effective_chat.id, text=text['added_to_cart'][lang])
 
 
 async def product_minus(update: Update, context: ContextTypes.DEFAULT_TYPE):

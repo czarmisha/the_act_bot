@@ -24,6 +24,11 @@ text = {
         'uz': 'Kontakt yuborish',
         'en': 'Send contact',
     },
+    'added_to_cart': {
+        'ru': 'Добавлено в корзину',
+        'uz': 'Savatga qo`shildi',
+        'en': 'Added to cart',
+    },
     'phone_format': {
         'ru': 'Неверный формат номера',
         'uz': 'Noto`g`ri telefon raqami',
