@@ -5,6 +5,7 @@ from telegram.ext import (
     CommandHandler,
     ConversationHandler,
     filters,
+    CallbackQueryHandler
 )
 
 import the_act_bot.src.repos as repos
@@ -15,7 +16,7 @@ from the_act_bot.src.database.session import session_maker
 from the_act_bot.src.utils.translation import text
 
 
-BRAND, CATEGORY, PRODUCT = range(3)
+BRAND, CATEGORY, PRODUCT, CART_ADD = range(4)
 
 
 async def store(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -132,9 +133,142 @@ async def product(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=keyboards.add_product_to_cart(product.id, lang, context.user_data['to_add'])
         )
 
+    return CART_ADD
+
+
+async def cart_add(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    lang = context.user_data.get('lang')
+    user = None
+    cart = None
+    async with session_maker() as session:
+        user_repo = repos.UserRepo(session)
+        user = await user_repo.get_by_telegram_id(update.effective_user.id)
+        cart = await user_repo.get_cart(user.id)
+        if not lang:
+            lang = user.lang
+            context.user_data['lang'] = lang
+    
+    query = update.callback_query
+    await query.answer()
+    if query.data == 'add_to_cart_back':
+        async with session_maker() as session:
+            product_repo = repos.ProductRepo(session)
+            products = await product_repo.list_by_brand_and_category(
+                category_id=context.user_data['selected_category_id'],
+                brand_id=context.user_data['selected_brand_id']
+            )
+            if not products:
+                await context.bot.send_message(chat_id=update.effective_chat.id, text=text['no_product'][lang])
+                return ConversationHandler.END
+
+        keyboard = keyboards.get_product_keyboard_markup(products, lang)
+        await context.bot.send_message(chat_id=update.effective_chat.id, text=text['select_product_continue'][lang], reply_markup=keyboard)
+        return PRODUCT
+    elif query.data.startswith('product_minus_'):
+        return await product_minus(update, context)
+    elif query.data.startswith('product_plus_'):
+        return await product_plus(update, context)
+    
+    product_id = query.data.split('_')[-2]
+    to_add = query.data.split('_')[-1]
+
+    if not cart:
+        async with session_maker() as session:
+            cart_repo = repos.CartRepo(session)
+            cart = await cart_repo.create(user.id)
+            cart = await cart_repo.add_item(cart.id, int(product_id), int(to_add))
+    else:
+        async with session_maker() as session:
+            cart_repo = repos.CartRepo(session)
+            cart = await cart_repo.add_item(cart.id, int(product_id), int(to_add))
+    
+    await context.bot.delete_message(chat_id=update.effective_chat.id, message_id=query.message.message_id)
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text=text['added_to_cart'][lang], 
+    )
+
+    async with session_maker() as session:
+        product_repo = repos.ProductRepo(session)
+        products = await product_repo.list_by_brand_and_category(
+            category_id=context.user_data['selected_category_id'],
+            brand_id=context.user_data['selected_brand_id']
+        )
+        if not products:
+            await context.bot.send_message(chat_id=update.effective_chat.id, text=text['no_product'][lang])
+            return ConversationHandler.END
+
+    keyboard = keyboards.get_product_keyboard_markup(products, lang)
+    await context.bot.send_message(chat_id=update.effective_chat.id, text=text['select_product_continue'][lang], reply_markup=keyboard)
+    return PRODUCT
+
+
+async def product_minus(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    lang = context.user_data.get('lang')
+    if not lang:
+        async with session_maker() as session:
+            user_repo = repos.UserRepo(session)
+            user = await user_repo.get_by_telegram_id(update.effective_user.id)
+            lang = user.lang
+            context.user_data['lang'] = lang
+
+    query = update.callback_query
+    await query.answer()
+    product_id = query.data.split('_')[-2]
+    to_add = query.data.split('_')[-1]
+    if int(context.user_data.get('to_add', 1)) == 1:
+        return
+    to_add = int(to_add) - 1
+    context.user_data['to_add'] = to_add
+    await query.edit_message_reply_markup(reply_markup=keyboards.add_product_to_cart(int(product_id), lang, to_add))
+
+    return CART_ADD
+
+
+async def product_plus(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    lang = context.user_data.get('lang')
+    if not lang:
+        async with session_maker() as session:
+            user_repo = repos.UserRepo(session)
+            user = await user_repo.get_by_telegram_id(update.effective_user.id)
+            lang = user.lang
+            context.user_data['lang'] = lang
+
+    query = update.callback_query
+    await query.answer()
+    product_id = query.data.split('_')[-2]
+    if int(context.user_data.get('to_add')) == 10:
+        return
+    to_add = query.data.split('_')[-1]
+    to_add = int(to_add) + 1
+    context.user_data['to_add'] = to_add
+    await query.edit_message_reply_markup(reply_markup=keyboards.add_product_to_cart(int(product_id), lang, to_add))
+
+    return CART_ADD
+
+
+async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    lang = context.chat_data.get('lang') #TODO: add cancel btn
+    await update.message.reply_text(
+        text['canceled'][lang or 'ru'],
+        reply_markup=keyboards.get_admin_main_menu_keyboard()
+    )
+
     return ConversationHandler.END
 
-#TODO: cancel
+
+async def callback_cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    lang = context.user_data.get('lang')
+    query = update.callback_query
+    await query.answer()
+    await context.bot.delete_message(chat_id=update.effective_chat.id, message_id=query.message.message_id)
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text=text['canceled'][lang or 'ru'],
+        reply_markup=keyboards.get_main_menu_keyboard(lang or 'ru')
+    )
+
+    return ConversationHandler.END
 
 
 store_handler = ConversationHandler(
@@ -153,6 +287,15 @@ store_handler = ConversationHandler(
         BRAND: [MessageHandler(filters.TEXT, brand)],
         CATEGORY: [MessageHandler(filters.TEXT, category)],
         PRODUCT: [MessageHandler(filters.TEXT, product)],
+        CART_ADD: [
+            CallbackQueryHandler(cart_add, pattern="^add_to_cart_"),
+            CallbackQueryHandler(product_minus, pattern="^product_minus_"),
+            CallbackQueryHandler(product_plus, pattern="^product_plus_"),
+            CallbackQueryHandler(cart_add, pattern="^add_to_cart_back$")
+        ],
     },
-    fallbacks=[CommandHandler('cancel', lambda update, context: ConversationHandler.END)],
+    fallbacks=[
+        CommandHandler('cancel', cancel),
+        CallbackQueryHandler(callback_cancel, pattern="^store_cancel$")
+    ],
 )

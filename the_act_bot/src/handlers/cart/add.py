@@ -49,7 +49,11 @@ async def cart_add(update: Update, context: ContextTypes.DEFAULT_TYPE):
             cart = await cart_repo.add_item(cart.id, int(product_id), int(to_add))
     
     await context.bot.delete_message(chat_id=update.effective_chat.id, message_id=query.message.message_id)
-    await context.bot.send_message(chat_id=update.effective_chat.id, text=text['added_to_cart'][lang])
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text=text['added_to_cart'][lang], 
+        reply_markup=keyboards.get_main_menu_keyboard(lang)
+    )
 
 
 async def product_minus(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -65,6 +69,8 @@ async def product_minus(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.answer()
     product_id = query.data.split('_')[-2]
     to_add = query.data.split('_')[-1]
+    if int(context.user_data.get('to_add', 1)) == 1:
+        return
     to_add = int(to_add) - 1
     context.user_data['to_add'] = to_add
     await query.edit_message_reply_markup(reply_markup=keyboards.add_product_to_cart(int(product_id), lang, to_add))
@@ -82,6 +88,8 @@ async def product_plus(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     product_id = query.data.split('_')[-2]
+    if int(context.user_data.get('to_add')) == 10:
+        return
     to_add = query.data.split('_')[-1]
     to_add = int(to_add) + 1
     context.user_data['to_add'] = to_add

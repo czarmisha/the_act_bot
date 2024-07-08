@@ -33,13 +33,13 @@ def get_add_keyboard(lang: str = 'ru') -> ReplyKeyboardMarkup:
     )
 
 
-def get_main_menu_keyboard() -> ReplyKeyboardMarkup:
+def get_main_menu_keyboard(lang: str = 'ru') -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
         [
-            [KeyboardButton(text=text['shop']['ru'])],
-            [KeyboardButton(text=text['cart']['ru'])],
-            [KeyboardButton(text=text['order_history']['ru'])],
-            [KeyboardButton(text=text['change_lang']['ru'])],
+            [KeyboardButton(text=text['shop'][lang])],
+            [KeyboardButton(text=text['cart'][lang])],
+            [KeyboardButton(text=text['order_history'][lang])],
+            [KeyboardButton(text=text['change_lang'][lang])],
         ],
         resize_keyboard=True,
     )
@@ -53,7 +53,9 @@ def add_product_to_cart(product_id: int, lang: str = 'ru', to_add: int = 1) -> I
                 InlineKeyboardButton(text=str(to_add), callback_data="ignore"),
                 InlineKeyboardButton(text='+', callback_data=f"product_plus_{product_id}_{to_add}")
             ],
-            [InlineKeyboardButton(text=text['add_to_cart'][lang], callback_data=f"add_to_cart_{product_id}_{to_add}")]
+            [InlineKeyboardButton(text=text['add_to_cart'][lang], callback_data=f"add_to_cart_{product_id}_{to_add}")],
+            [InlineKeyboardButton(text=text['back'][lang], callback_data=f"add_to_cart_back")],
+            [InlineKeyboardButton(text=text['cancel'][lang], callback_data=f"store_cancel")],
         ]
     )
 

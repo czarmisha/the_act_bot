@@ -45,9 +45,14 @@ text = {
         'en': 'Choose a category',
     },
     'select_product': {
-        'ru': 'Выберите продукт',
+        'ru': 'Выберите товар',
         'uz': 'Mahsulotni tanlang',
         'en': 'Choose a product',
+    },
+    'select_product_continue': {
+        'ru': 'Продолжим? Выберите товар',
+        'uz': 'Davom etamiz? Mahsulotni tanlang',
+        'en': 'Continue? Choose a product',
     },
     'add_to_cart': {
         'ru': 'Добавить в корзину',
