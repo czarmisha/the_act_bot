@@ -5,12 +5,12 @@ from the_act_bot.src.utils.translation import text
 
 def get_phone_keyboard_markup(lang: str) -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
-    [
-        [KeyboardButton(text=f"📞 {text['phone'][lang]}", request_contact=True)]
-    ],
-    resize_keyboard=True,
-    one_time_keyboard=True
-)
+        [
+            [KeyboardButton(text=f"📞 {text['phone'][lang]}", request_contact=True)]
+        ],
+        resize_keyboard=True,
+        one_time_keyboard=True
+    )
 
 
 def get_lang_keyboard_markup() -> InlineKeyboardMarkup:
@@ -54,8 +54,8 @@ def add_product_to_cart(product_id: int, lang: str = 'ru', to_add: int = 1) -> I
                 InlineKeyboardButton(text='+', callback_data=f"product_plus_{product_id}_{to_add}")
             ],
             [InlineKeyboardButton(text=text['add_to_cart'][lang], callback_data=f"add_to_cart_{product_id}_{to_add}")],
-            [InlineKeyboardButton(text=text['back'][lang], callback_data=f"add_to_cart_back")],
-            [InlineKeyboardButton(text=text['cancel'][lang], callback_data=f"store_cancel")],
+            [InlineKeyboardButton(text=text['back'][lang], callback_data="add_to_cart_back")],
+            [InlineKeyboardButton(text=text['cancel'][lang], callback_data="store_cancel")],
         ]
     )
 

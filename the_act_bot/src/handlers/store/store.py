@@ -10,7 +10,6 @@ from telegram.ext import (
 
 import the_act_bot.src.repos as repos
 from the_act_bot.src.handlers.start import start
-import the_act_bot.src.schemas as schemas
 import the_act_bot.src.utils.keyboards as keyboards
 from the_act_bot.src.database.session import session_maker
 from the_act_bot.src.utils.translation import text
@@ -31,9 +30,9 @@ async def store(update: Update, context: ContextTypes.DEFAULT_TYPE):
         brand_repo = repos.BrandRepo(session)
         brands = await brand_repo.list()
         if not brands:
-            await update.message.reply_text(text['no_brand'][lang])
+            await update.message.reply_text(text['no_brands'][lang])
             return ConversationHandler.END
-    
+
     keyboard = keyboards.get_brand_keyboard_markup(brands)
     await update.message.reply_text(text['select_brand'][lang], reply_markup=keyboard)
     return BRAND
@@ -49,7 +48,7 @@ async def brand(update: Update, context: ContextTypes.DEFAULT_TYPE):
             user = await user_repo.get_by_telegram_id(update.effective_user.id)
             lang = user.lang
             context.user_data['lang'] = lang
-        
+
         brand_repo = repos.BrandRepo(session)
         brand = await brand_repo.get_by_name(update.message.text)
         if not brand:
@@ -74,7 +73,10 @@ async def category(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return await store(update, context)
     async with session_maker() as session:
         category_repo = repos.CategoryRepo(session)
-        category = await category_repo.get_by_name_and_brand_id(update.message.text, context.user_data['selected_brand_id'])
+        category = await category_repo.get_by_name_and_brand_id(
+            update.message.text,
+            context.user_data['selected_brand_id']
+        )
         if not category:
             context.bot.send_message(chat_id=update.effective_chat.id, text=text['category_not_found'][lang])
             return BRAND
@@ -104,16 +106,20 @@ async def product(update: Update, context: ContextTypes.DEFAULT_TYPE):
             user = await user_repo.get_by_telegram_id(update.effective_user.id)
             lang = user.lang
             context.user_data['lang'] = lang
-        
+
         product_repo = repos.ProductRepo(session)
-        product = await product_repo.get_by_category_id_and_brand_id(context.user_data['selected_category_id'], context.user_data['selected_brand_id'], update.message.text)
+        product = await product_repo.get_by_category_id_and_brand_id(
+            context.user_data['selected_category_id'],
+            context.user_data['selected_brand_id'],
+            update.message.text
+        )
         if not product:
             await context.bot.send_message(chat_id=update.effective_chat.id, text=text['product_not_found'][lang])
             return CATEGORY
 
         image_repo = repos.ImageRepo(session)
         images = await image_repo.get_by_product_id(int(product.id))
-        
+
     info_text = f"<b>Имя: {product.name}</b>\n\n{product.description[lang]}\n\nЦена: {product.price}"
     context.user_data['to_add_product_id'] = product.id
     context.user_data['to_add'] = 1
@@ -147,7 +153,7 @@ async def cart_add(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if not lang:
             lang = user.lang
             context.user_data['lang'] = lang
-    
+
     query = update.callback_query
     await query.answer()
     if query.data == 'add_to_cart_back':
@@ -162,13 +168,17 @@ async def cart_add(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 return ConversationHandler.END
 
         keyboard = keyboards.get_product_keyboard_markup(products, lang)
-        await context.bot.send_message(chat_id=update.effective_chat.id, text=text['select_product_continue'][lang], reply_markup=keyboard)
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text=text['select_product_continue'][lang],
+            reply_markup=keyboard
+        )
         return PRODUCT
     elif query.data.startswith('product_minus_'):
         return await product_minus(update, context)
     elif query.data.startswith('product_plus_'):
         return await product_plus(update, context)
-    
+
     product_id = query.data.split('_')[-2]
     to_add = query.data.split('_')[-1]
 
@@ -181,11 +191,11 @@ async def cart_add(update: Update, context: ContextTypes.DEFAULT_TYPE):
         async with session_maker() as session:
             cart_repo = repos.CartRepo(session)
             cart = await cart_repo.add_item(cart.id, int(product_id), int(to_add))
-    
+
     await context.bot.delete_message(chat_id=update.effective_chat.id, message_id=query.message.message_id)
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text=text['added_to_cart'][lang], 
+        text=text['added_to_cart'][lang],
     )
 
     async with session_maker() as session:
@@ -199,7 +209,11 @@ async def cart_add(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return ConversationHandler.END
 
     keyboard = keyboards.get_product_keyboard_markup(products, lang)
-    await context.bot.send_message(chat_id=update.effective_chat.id, text=text['select_product_continue'][lang], reply_markup=keyboard)
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text=text['select_product_continue'][lang],
+        reply_markup=keyboard
+    )
     return PRODUCT
 
 
@@ -248,7 +262,7 @@ async def product_plus(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    lang = context.chat_data.get('lang') #TODO: add cancel btn
+    lang = context.chat_data.get('lang')  # TODO: add cancel btn
     await update.message.reply_text(
         text['canceled'][lang or 'ru'],
         reply_markup=keyboards.get_admin_main_menu_keyboard()

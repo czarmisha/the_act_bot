@@ -1,10 +1,9 @@
-from uuid import UUID
-
 from sqlalchemy import insert, select, update
 
 from the_act_bot.src.database import enums
 from the_act_bot.src.database.models import User, Cart
 from the_act_bot.src.schemas import user as schemas
+from the_act_bot.src.core.config import settings
 
 from .base import SQLAlchemyRepo
 
@@ -29,8 +28,11 @@ class UserRepo(SQLAlchemyRepo):
 
         await self._session.commit()
         return schemas.UserOut.model_validate(user)
-    
+
     async def is_admin(self, telegram_id: int) -> bool:
+        if str(telegram_id) == settings.super_admin_id:
+            return True
+
         stmt = select(User).where(User.telegram_id == telegram_id, User.type == enums.UserTypeEnums.ADMIN)
 
         result = await self._session.scalar(stmt)
@@ -59,7 +61,7 @@ class UserRepo(SQLAlchemyRepo):
             return
 
         return result
-    
+
     async def get_by_telegram_id(self, telegram_id: int) -> User:
         stmt = select(User).where(User.telegram_id == telegram_id)
 
@@ -69,8 +71,8 @@ class UserRepo(SQLAlchemyRepo):
             return
 
         return result
-    
-    async def update(self, telegram_id: int ,user_in: schemas.UserUpdate):
+
+    async def update(self, telegram_id: int, user_in: schemas.UserUpdate):
         stmt = (
             update(User)
             .where(User.telegram_id == telegram_id)
@@ -81,7 +83,7 @@ class UserRepo(SQLAlchemyRepo):
         await self._session.commit()
 
         return True
-    
+
     async def get_cart(self, user_id: int) -> int:
         stmt = select(Cart).where(Cart.user_id == user_id).limit(1)
 

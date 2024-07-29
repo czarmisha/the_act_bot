@@ -99,17 +99,11 @@ text = {
         'uz': 'Orqaga',
         'en': 'Back',
     },
-
     # admin
     'list_category': {
         'ru': 'Список категорий',
         'uz': 'Kategoriyalarni ro`yxat',
         'en': 'List of categories',
-    },
-    'add_category': {
-        'ru': 'Добавить категорию',
-        'uz': 'Kategoriyani qo`shish',
-        'en': 'Add category',
     },
     'list_product': {
         'ru': 'Список продуктов',
@@ -146,16 +140,6 @@ text = {
         'uz': 'Kategoriyani qo`shish',
         'en': 'Add category',
     },
-    'list_category': {
-        'ru': 'Список категорий',
-        'uz': 'Kategoriyalarni ro`yxat',
-        'en': 'List of categories',
-    },
-    'add_category': {
-        'ru': 'Добавить категорию',
-        'uz': 'Kategoriyani qo`shish',
-        'en': 'Add category',
-    },
     'not_admin': {
         'ru': 'Вы не администратор',
         'uz': 'Siz administrator emassiz',
@@ -170,6 +154,11 @@ text = {
         'ru': 'Отменить',
         'uz': 'Bekor qilish',
         'en': 'Cancel',
+    },
+    'product_not_found': {
+        'ru': 'Продукт не найден',
+        'uz': 'Mahsulot topilmadi',
+        'en': 'Product not found',
     },
     'analytics': {
         'ru': 'Аналитика',

@@ -47,7 +47,7 @@ async def name(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not name:
         await update.message.reply_text("Введите имя бренда")
         return NAME
-    
+
     context.chat_data['new_brand_name'] = name
     await update.message.reply_text("Введите позицию в списке брендов (число)")
     return POSITION
@@ -65,12 +65,12 @@ async def position(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not position or not position.isdigit():
         await update.message.reply_text("Введите позицию в списке брендов (число)")
         return POSITION
-    
+
     brand_name = context.chat_data.get('new_brand_name')
     if not brand_name:
         await update.message.reply_text("Введите имя бренда")
         return NAME
-    
+
     async with session_maker() as session:
         brand_repo = repos.BrandRepo(session)
         await brand_repo.create(
@@ -79,13 +79,13 @@ async def position(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 position=int(position),
             )
         )
-    
+
     await update.message.reply_text("Готово, бренд добавлен", reply_markup=keyboards.get_admin_main_menu_keyboard())
     return ConversationHandler.END
 
 
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    lang = context.chat_data.get('lang') #TODO: add cancel btn
+    lang = context.chat_data.get('lang')  # TODO: add cancel btn
     await update.message.reply_text(
         text['canceled'][lang or 'ru'],
         reply_markup=keyboards.get_admin_main_menu_keyboard()
@@ -95,7 +95,9 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 
 brand_add_handler = ConversationHandler(
-        entry_points=[MessageHandler(filters.TEXT & ~filters.COMMAND & filters.Regex(fr"^{text['add_brand']['ru']}$"), brand_add)],
+        entry_points=[
+            MessageHandler(filters.TEXT & ~filters.COMMAND & filters.Regex(fr"^{text['add_brand']['ru']}$"), brand_add)
+        ],
         states={
             NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, name)],
             POSITION: [MessageHandler(filters.TEXT & ~filters.COMMAND, position)],

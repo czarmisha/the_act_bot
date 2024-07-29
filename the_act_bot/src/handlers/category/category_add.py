@@ -32,7 +32,10 @@ async def category_add(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if not is_admin:
             await update.message.reply_text(text['not_admin'])
 
-    await update.message.reply_text(text="Введите имя категории на 3 языках(ru, uz, en). Каждый с новой строки.\nПример:\n\nЯблоко\nOlma\nApple", reply_markup=ReplyKeyboardRemove())
+    await update.message.reply_text(
+        text="Введите имя категории на 3 языках(ru, uz, en). Каждый с новой строки.\nПример:\n\nЯблоко\nOlma\nApple",
+        reply_markup=ReplyKeyboardRemove()
+    )
     return NAME
 
 
@@ -46,9 +49,11 @@ async def name(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     name = update.message.text.split('\n')
     if not name or not len(name) == 3:
-        await update.message.reply_text("Введите имя категории на 3 языках(ru, uz, en). Каждый с новой строки.\nПример:\n\nЯблоко\nOlma\nApple")
+        await update.message.reply_text(
+            "Введите имя категории на 3 языках(ru, uz, en). Каждый с новой строки.\nПример:\n\nЯблоко\nOlma\nApple"
+        )
         return NAME
-    
+
     context.chat_data['new_category_name'] = {
         'ru': name[0],
         'uz': name[1],
@@ -70,7 +75,7 @@ async def position(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not position or not position.isdigit():
         await update.message.reply_text("Введите позицию в списке категорий (число)")
         return POSITION
-    
+
     context.chat_data['new_category_position'] = position
     async with session_maker() as session:
         brand_repo = repos.BrandRepo(session)
@@ -78,8 +83,10 @@ async def position(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if not brands:
             await update.message.reply_text(text['no_brands']['ru'])
             return ConversationHandler.END
-    
-    await update.message.reply_text("К какому бренду добавить категорию?", reply_markup=keyboards.get_category_add_brand_list(brands))
+
+    await update.message.reply_text(
+        "К какому бренду добавить категорию?", reply_markup=keyboards.get_category_add_brand_list(brands)
+    )
     return BRAND
 
 
@@ -99,12 +106,14 @@ async def brand(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not category_position or not category_position.isdigit():
         await query.edit_message_text(text="Введите позицию в списке категорий (число)")
         return POSITION
-    
+
     category_name = context.chat_data.get('new_category_name')
     if not category_name:
-        await query.edit_message_text(text="Введите имя категории на 3 языках(ru, uz, en). Каждый с новой строки.\nПример:\n\nЯблоко\nOlma\nApple")
+        await query.edit_message_text(
+            text="Введите имя категории на 3 языках(ru,uz,en). Каждый с новой строки.\nПример:\n\nЯблоко\nOlma\nApple"
+        )
         return NAME
-    
+
     async with session_maker() as session:
         category_repo = repos.CategoryRepo(session)
         await category_repo.create(
@@ -114,13 +123,18 @@ async def brand(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 brand_id=brand_id
             )
         )
-    
-    await query.edit_message_text(text="Готово, категория добавлена", reply_markup=keyboards.get_admin_main_menu_keyboard())
+
+    await context.bot.delete_message(chat_id=update.effective_chat.id, message_id=query.message.message_id)
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text=text['added_category'][context.chat_data.get('lang') or 'ru'],
+        reply_markup=keyboards.get_admin_main_menu_keyboard()
+    )
     return ConversationHandler.END
 
 
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    lang = context.chat_data.get('lang') #TODO: add cancel btn
+    lang = context.chat_data.get('lang')  # TODO: add cancel btn
     await update.message.reply_text(
         text['canceled'][lang or 'ru'],
         reply_markup=keyboards.get_admin_main_menu_keyboard()
@@ -130,7 +144,12 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 
 category_add_handler = ConversationHandler(
-        entry_points=[MessageHandler(filters.TEXT & ~filters.COMMAND & filters.Regex(fr"^{text['add_category']['ru']}$"), category_add)],
+        entry_points=[
+            MessageHandler(
+                filters.TEXT & ~filters.COMMAND & filters.Regex(fr"^{text['add_category']['ru']}$"),
+                category_add
+            )
+        ],
         states={
             NAME: [MessageHandler(filters.TEXT & ~filters.COMMAND, name)],
             POSITION: [MessageHandler(filters.TEXT & ~filters.COMMAND, position)],

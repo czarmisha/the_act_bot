@@ -1,10 +1,7 @@
-from uuid import UUID
-
 from sqlalchemy import insert, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 
-from the_act_bot.src.database import enums
 from the_act_bot.src.database.models import Cart
 from the_act_bot.src.database.models.cart import CartItem
 from the_act_bot.src.schemas import cart as schemas
@@ -38,7 +35,7 @@ class CartRepo(SQLAlchemyRepo):
             return
 
         return result
-    
+
     async def get_by_user_id(self, user_id: int) -> Cart:
         stmt = select(Cart).where(Cart.user_id == user_id)
 
@@ -48,8 +45,7 @@ class CartRepo(SQLAlchemyRepo):
             return
 
         return result
-    
-    
+
     async def add_item(
         self, cart_id: int, product_id: int, quantity: int
     ) -> schemas.CartItem:
@@ -66,8 +62,8 @@ class CartRepo(SQLAlchemyRepo):
             )
             .returning(CartItem)
         )
-    
+
         cart_item = await self._session.scalar(stmt)
-    
+
         await self._session.commit()
         return cart_item

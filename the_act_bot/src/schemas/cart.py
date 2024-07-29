@@ -1,7 +1,5 @@
 from pydantic import BaseModel, ConfigDict
 
-from the_act_bot.src.database.enums import LanguageEnums
-
 
 class CartItem(BaseModel):
     product_id: int

@@ -110,7 +110,7 @@ product_edit_handler = CallbackQueryHandler(tmp, pattern="^product_edit_\d+$")
 
 
 # async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-#     lang = context.chat_data.get('lang') #TODO: add cancel btn
+#     lang = context.chat_data.get('lang')  # TODO: add cancel btn
 #     await update.message.reply_text(
 #         text['canceled'][lang or 'ru'],
 #         reply_markup=keyboards.get_admin_main_menu_keyboard()
