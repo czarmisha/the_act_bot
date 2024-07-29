@@ -1,4 +1,5 @@
 from sqlalchemy import insert, select
+from sqlalchemy.orm import selectinload
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 
@@ -35,6 +36,18 @@ class CartRepo(SQLAlchemyRepo):
             return
 
         return result
+
+    async def get_info(self, cart_id: int) -> CartItem:
+        stmt = select(CartItem).where(CartItem.cart_id == cart_id).options(
+            selectinload(CartItem.product)
+        )
+
+        result = await self._session.scalars(stmt)
+
+        if result is None:
+            return
+
+        return result.all()
 
     async def get_by_user_id(self, user_id: int) -> Cart:
         stmt = select(Cart).where(Cart.user_id == user_id)

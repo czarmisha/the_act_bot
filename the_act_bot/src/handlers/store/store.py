@@ -10,6 +10,7 @@ from telegram.ext import (
 
 import the_act_bot.src.repos as repos
 from the_act_bot.src.handlers.start import start
+from the_act_bot.src.utils.cart import get_cart_text
 import the_act_bot.src.utils.keyboards as keyboards
 from the_act_bot.src.database.session import session_maker
 from the_act_bot.src.utils.translation import text
@@ -100,6 +101,20 @@ async def product(update: Update, context: ContextTypes.DEFAULT_TYPE):
     lang = context.user_data.get('lang')
     if update.message.text in [text['back']['ru'], text['back']['uz'], text['back']['en']]:
         return await store(update, context)
+    elif update.message.text in [text['cart']['ru'], text['cart']['uz'], text['cart']['en']]:
+        async with session_maker() as session:
+            user_id = context.user_data.get('user_id', None)
+            if not user_id:
+                user_repo = repos.UserRepo(session)
+                user = await user_repo.get_by_telegram_id(update.effective_user.id)
+                user_id = user.id
+            cart_repo = repos.CartRepo(session)
+            cart = await cart_repo.get_by_user_id(user_id)
+            cart_info = await cart_repo.get_info(cart.id)
+            cart_text = await get_cart_text(cart_info, lang)
+            # TODO: inline keyboard for cart to remove and add items
+            await update.message.reply_text(cart_text, reply_markup=keyboards.get_main_menu_keyboard(lang))
+        return ConversationHandler.END
     async with session_maker() as session:
         if not lang:
             user_repo = repos.UserRepo(session)
